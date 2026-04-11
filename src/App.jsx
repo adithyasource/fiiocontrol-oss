@@ -1,155 +1,19 @@
-import { createSignal, For, onCleanup, Show, batch, createMemo, createEffect } from "solid-js";
-import { createStore } from "solid-js/store";
-
-const SAMPLE_RATE = 44100;
-const MIN_FREQ = 20;
-const MAX_FREQ = 20000;
-const MIN_GAIN = -12;
-const MAX_GAIN = 12;
-
-// ---- HID STATE ----
-let device = null;
-const TYPE_MAP = { PK: 0, LSC: 1, HSC: 2 };
-const REV_TYPE_MAP = { 0: "PK", 1: "LSC", 2: "HSC" };
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "solid-js";
+import { MAX_FREQ, MAX_GAIN, MIN_FREQ, MIN_GAIN, SAMPLE_RATE } from "./libs/consts";
+import {
+  connectDAC,
+  handleDisconnect,
+  resetToOriginal,
+  saveToDAC,
+  sendMasterGain,
+  syncPreview,
+} from "./libs/hidController";
+import { bands, isConnected, masterGain, setBands, setIsConnected, setMasterGain, status } from "./libs/hidStore";
+import { toast } from "./libs/toastStore";
 
 function App() {
-  const defaultBands = [
-    { type: "PK", gain: 0, freq: 100, q: 0.7 },
-    { type: "PK", gain: 0, freq: 500, q: 0.7 },
-    { type: "PK", gain: 0, freq: 1000, q: 0.7 },
-    { type: "PK", gain: 0, freq: 2500, q: 0.7 },
-    { type: "PK", gain: 0, freq: 10000, q: 0.7 },
-  ];
-  const [bands, setBands] = createStore(defaultBands);
-
-  const [masterGain, setMasterGain] = createSignal(0);
-  const [isConnected, setIsConnected] = createSignal(false);
-  const [status, setStatus] = createSignal("Offline");
-  const [toast, setToast] = createSignal(null);
-
-  const [originalBands, setOriginalBands] = createSignal([]);
-  const [originalMasterGain, setOriginalMasterGain] = createSignal(0);
-
-  const showToast = (message, duration = 3000) => {
-    setToast(message);
-    setTimeout(() => setToast(null), duration);
-  };
-
-  const handleDisconnect = (e) => {
-    if (e.device === device) {
-      device = null;
-      setIsConnected(false);
-      setStatus("Offline");
-      setBands(defaultBands);
-      showToast("Disconnected from DAC");
-    }
-  };
-
   navigator.hid.addEventListener("disconnect", handleDisconnect);
   onCleanup(() => navigator.hid.removeEventListener("disconnect", handleDisconnect));
-
-  // ---- HID INPUT HANDLER ----
-  function handleInputReport(e) {
-    const data = new Uint8Array(e.data.buffer);
-    const cmd = data[4];
-
-    if (cmd === 23) {
-      const raw = (data[7] << 8) | data[6];
-      const signed = raw > 32767 ? raw - 65536 : raw;
-      setMasterGain(parseFloat((signed / 2560).toFixed(1)));
-    }
-
-    if (cmd === 21) {
-      const bandIdx = data[6];
-      const rawGain = (data[7] << 8) | data[8];
-      const signedGain = rawGain > 32767 ? rawGain - 65536 : rawGain;
-      const gain = parseFloat((signedGain / 10).toFixed(1));
-      const freq = (data[9] << 8) | data[10];
-      const qRaw = (data[11] << 8) | data[12];
-      const q = parseFloat((qRaw / 100).toFixed(2));
-      const type = REV_TYPE_MAP[data[13]] || "PK";
-
-      if (bandIdx >= 0 && bandIdx < 5) {
-        batch(() => {
-          setBands(bandIdx, "freq", freq);
-          setBands(bandIdx, "gain", gain);
-          setBands(bandIdx, "q", q);
-          setBands(bandIdx, "type", type);
-        });
-      }
-    }
-  }
-
-  async function connectDAC() {
-    try {
-      const devices = await navigator.hid.requestDevice({ filters: [] });
-      device = devices[0];
-      if (!device) return;
-      await device.open();
-      device.addEventListener("inputreport", handleInputReport);
-      setIsConnected(true);
-      setStatus("Connected");
-      await fetchAllData();
-    } catch (err) {
-      setStatus("Error: " + err.message);
-    }
-  }
-
-  async function fetchAllData() {
-    if (!device) return;
-    setStatus("Reading DAC...");
-    await device.sendReport(2, new Uint8Array([0xbb, 0x0b, 0, 0, 23, 0, 0, 0xee]));
-    await sleep(200);
-    for (let i = 0; i < 5; i++) {
-      await device.sendReport(2, new Uint8Array([0xbb, 0x0b, 0, 0, 21, 1, i, 0xee]));
-      await sleep(150);
-    }
-    setOriginalBands(JSON.parse(JSON.stringify(bands)));
-    setOriginalMasterGain(masterGain());
-    setStatus("Synced");
-  }
-
-  async function sendMasterGain(val) {
-    if (!device) return;
-    let value = Math.round(Math.max(-12, Math.min(12, val)) * 2560);
-    if (value < 0) value = 65536 + value;
-    await device.sendReport(2, new Uint8Array([0xaa, 0x0a, 0, 0, 23, 2, value & 0xff, (value >> 8) & 0xff, 0, 0xee]));
-  }
-
-  async function syncPreview() {
-    if (!device || status() !== "Synced") return;
-    for (let i = 0; i < bands.length; i++) {
-      const b = bands[i];
-      let g = Math.round(b.gain * 10);
-      if (g < 0) g = 65536 + g;
-      const f = Math.round(b.freq);
-      const qv = Math.round(b.q * 100);
-
-      const packet = new Uint8Array([
-        0xaa,
-        0x10,
-        0,
-        0,
-        21,
-        8,
-        i,
-        (g >> 8) & 0xff,
-        g & 0xff,
-        (f >> 8) & 0xff,
-        f & 0xff,
-        (qv >> 8) & 0xff,
-        qv & 0xff,
-        TYPE_MAP[b.type],
-        0,
-        0xee,
-      ]);
-      await device.sendReport(2, packet);
-      await sleep(20);
-    }
-    await sendMasterGain(masterGain());
-  }
 
   let previewTimeout;
   createEffect(() => {
@@ -163,54 +27,6 @@ function App() {
     }
   });
 
-  function resetToOriginal() {
-    batch(() => {
-      const original = originalBands();
-      if (original.length) {
-        for (let i = 0; i < original.length; i++) {
-          setBands(i, original[i]);
-        }
-      }
-      setMasterGain(originalMasterGain());
-    });
-  }
-
-  async function saveToDAC() {
-    if (!device) return alert("Not connected");
-    setStatus("Saving...");
-    for (let i = 0; i < bands.length; i++) {
-      const b = bands[i];
-      let g = Math.round(b.gain * 10);
-      if (g < 0) g = 65536 + g;
-      const f = Math.round(b.freq);
-      const qv = Math.round(b.q * 100);
-
-      const packet = new Uint8Array([
-        0xaa,
-        0x10,
-        0,
-        0,
-        21,
-        8,
-        i,
-        (g >> 8) & 0xff,
-        g & 0xff,
-        (f >> 8) & 0xff,
-        f & 0xff,
-        (qv >> 8) & 0xff,
-        qv & 0xff,
-        TYPE_MAP[b.type],
-        0,
-        0xee,
-      ]);
-      await device.sendReport(2, packet);
-      await sleep(50);
-    }
-    await sleep(50);
-    await device.sendReport(2, new Uint8Array([0xaa, 0x0a, 0, 0, 25, 1, 3, 0, 0xee]));
-    setStatus("Saved");
-  }
-
   // ---- VISUAL MATH ----
   let svgRef;
   const [dragging, setDragging] = createSignal(null);
@@ -223,7 +39,7 @@ function App() {
 
   const freqToX = (f) =>
     paddingLeft + (Math.log10(Math.max(MIN_FREQ, f) / MIN_FREQ) / Math.log10(MAX_FREQ / MIN_FREQ)) * chartWidth;
-  const xToFreq = (x) => MIN_FREQ * Math.pow(MAX_FREQ / MIN_FREQ, (x - paddingLeft) / chartWidth);
+  const xToFreq = (x) => (MIN_FREQ * MAX_FREQ) / MIN_FREQ ** (x - paddingLeft) / chartWidth;
   const gainToY = (g) => plotHeight / 2 - (g / MAX_GAIN) * (plotHeight / 2);
   const yToGain = (y) => ((plotHeight / 2 - y) / (plotHeight / 2)) * MAX_GAIN;
 
@@ -237,21 +53,39 @@ function App() {
     if (e.altKey) {
       const deltaY = drag.startY - e.clientY;
       const newQ = Math.max(0.25, Math.min(8, drag.startQ + deltaY * 0.05));
-      setBands(drag.index, "q", parseFloat(newQ.toFixed(2)));
+      setBands(drag.index, "q", Number.parseFloat(newQ.toFixed(2)));
     } else {
-      setBands(drag.index, "freq", Math.max(20, Math.round(xToFreq(x))));
-      setBands(drag.index, "gain", parseFloat(yToGain(y).toFixed(1)));
+      setBands(drag.index, "freq", Math.round(xToFreq(x)));
+      setBands(drag.index, "gain", Number.parseFloat(yToGain(y).toFixed(1)));
     }
   }
+
+  const eqPath = createMemo(() => {
+    let points = [];
+    for (let x = paddingLeft; x <= width; x += 3) {
+      const f = xToFreq(x);
+      let totalGain = 0;
+      for (let i = 0; i < bands.length; i++) {
+        totalGain += getBiquadMagnitude(bands[i].type, bands[i].freq, bands[i].gain, bands[i].q, f);
+      }
+      points.push(`${x},${gainToY(totalGain)}`);
+    }
+    return `M ${points.join(" L ")}`;
+  });
 
   function getBiquadMagnitude(type, freq, gain, q, f) {
     const w0 = (2 * Math.PI * freq) / SAMPLE_RATE;
     const cosW0 = Math.cos(w0);
     const sinW0 = Math.sin(w0);
     const alpha = sinW0 / (2 * q);
-    const A = Math.pow(10, gain / 40);
+    const A = 10 ** (gain / 40);
 
-    let b0, b1, b2, a0, a1, a2;
+    let b0;
+    let b1;
+    let b2;
+    let a0;
+    let a1;
+    let a2;
 
     if (type === "PK") {
       b0 = 1 + alpha * A;
@@ -298,19 +132,6 @@ function App() {
     return 10 * Math.log10(numMagSq / denMagSq);
   }
 
-  const eqPath = createMemo(() => {
-    let points = [];
-    for (let x = paddingLeft; x <= width; x += 3) {
-      const f = xToFreq(x);
-      let totalGain = 0;
-      for (let i = 0; i < bands.length; i++) {
-        totalGain += getBiquadMagnitude(bands[i].type, bands[i].freq, bands[i].gain, bands[i].q, f);
-      }
-      points.push(`${x},${gainToY(totalGain)}`);
-    }
-    return `M ${points.join(" L ")}`;
-  });
-
   return (
     <div
       style={{
@@ -339,6 +160,7 @@ function App() {
           <Show when={!isConnected()}>
             <button
               onClick={connectDAC}
+              type="button"
               style={{
                 padding: "8px 15px",
                 background: "#007bff",
@@ -354,6 +176,7 @@ function App() {
           <Show when={isConnected()}>
             <button
               onClick={resetToOriginal}
+              type="button"
               style={{
                 padding: "8px 15px",
                 background: "#6c757d",
@@ -367,6 +190,7 @@ function App() {
             </button>
             <button
               onClick={() => setIsConnected(false)}
+              type="button"
               style={{
                 padding: "8px 15px",
                 background: "#444",
@@ -380,6 +204,7 @@ function App() {
             </button>
             <button
               onClick={saveToDAC}
+              type="button"
               style={{
                 padding: "8px 15px",
                 background: "#dc3545",
@@ -412,12 +237,13 @@ function App() {
             onPointerMove={handlePointerMove}
             onPointerUp={() => setDragging(null)}
             style={{ "touch-action": "none" }}
+            aria-label="bandControl"
           >
             {[20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000].map((f) => (
               <g>
                 <line x1={freqToX(f)} y1="0" x2={freqToX(f)} y2={plotHeight} stroke="#222" />
                 <text x={freqToX(f)} y={plotHeight + 20} fill="#888" font-size="10" text-anchor="middle">
-                  {f >= 1000 ? f / 1000 + "k" : f}
+                  {f >= 1000 ? `${f / 1000}k` : f}
                 </text>
               </g>
             ))}
@@ -493,7 +319,7 @@ function App() {
             orient="vertical"
             value={masterGain()}
             onInput={(e) => {
-              const val = parseFloat(e.target.value);
+              const val = Number.parseFloat(e.target.value);
               setMasterGain(val);
               sendMasterGain(val);
             }}
@@ -535,7 +361,7 @@ function App() {
                   step="0.1"
                   orient="vertical"
                   value={band.gain}
-                  onInput={(e) => setBands(i(), "gain", parseFloat(e.target.value))}
+                  onInput={(e) => setBands(i(), "gain", Number.parseFloat(e.target.value))}
                   style={{
                     "writing-mode": "bt-lr",
                     "-webkit-appearance": "slider-vertical",
@@ -562,7 +388,7 @@ function App() {
                     <input
                       type="number"
                       value={band.freq}
-                      onInput={(e) => setBands(i(), "freq", parseInt(e.target.value) || 0)}
+                      onInput={(e) => setBands(i(), "freq", Number.parseInt(e.target.value, 10) || 0)}
                       style={{
                         width: "55px",
                         background: "transparent",
@@ -579,7 +405,7 @@ function App() {
                       step="0.01"
                       value={band.q}
                       onInput={(e) =>
-                        setBands(i(), "q", Math.max(0.25, Math.min(8, parseFloat(e.target.value) || 0.25)))
+                        setBands(i(), "q", Math.max(0.25, Math.min(8, Number.parseFloat(e.target.value) || 0.25)))
                       }
                       style={{
                         width: "55px",
