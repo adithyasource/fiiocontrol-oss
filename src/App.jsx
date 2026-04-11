@@ -1,4 +1,4 @@
-import { createSignal, For, onCleanup, Show, batch, createMemo } from 'solid-js'
+import { createSignal, For, onCleanup, Show, batch, createMemo, createEffect } from 'solid-js'
 import { createStore } from 'solid-js/store'
 
 const SAMPLE_RATE = 44100
@@ -26,6 +26,28 @@ function App() {
   const [masterGain, setMasterGain] = createSignal(0)
   const [isConnected, setIsConnected] = createSignal(false)
   const [status, setStatus] = createSignal("Offline")
+  const [toast, setToast] = createSignal(null)
+
+  const [originalBands, setOriginalBands] = createSignal([])
+  const [originalMasterGain, setOriginalMasterGain] = createSignal(0)
+
+  const showToast = (message, duration = 3000) => {
+    setToast(message)
+    setTimeout(() => setToast(null), duration)
+  }
+
+  const handleDisconnect = (e) => {
+    if (e.device === device) {
+      device = null
+      setIsConnected(false)
+      setStatus("Offline")
+      resetToOriginal()
+      showToast("Disconnected from DAC")
+    }
+  }
+
+  navigator.hid.addEventListener("disconnect", handleDisconnect)
+  onCleanup(() => navigator.hid.removeEventListener("disconnect", handleDisconnect))
 
   // ---- HID INPUT HANDLER ----
   const handleInputReport = (e) => {
@@ -83,6 +105,8 @@ function App() {
       await device.sendReport(2, new Uint8Array([0xbb, 0x0b, 0, 0, 21, 1, i, 0xee]))
       await sleep(150) 
     }
+    setOriginalBands(JSON.parse(JSON.stringify(bands)))
+    setOriginalMasterGain(masterGain())
     setStatus("Synced")
   }
 
@@ -91,6 +115,52 @@ function App() {
     let value = Math.round(Math.max(-12, Math.min(12, val)) * 2560)
     if (value < 0) value = 65536 + value
     await device.sendReport(2, new Uint8Array([0xaa, 0x0a, 0, 0, 23, 2, value & 0xff, (value >> 8) & 0xff, 0, 0xee]))
+  }
+
+  const syncPreview = async () => {
+    if (!device || status() !== "Synced") return
+    for (let i = 0; i < bands.length; i++) {
+      const b = bands[i]
+      let g = Math.round(b.gain * 10)
+      if (g < 0) g = 65536 + g
+      const f = Math.round(b.freq)
+      const qv = Math.round(b.q * 100)
+
+      const packet = new Uint8Array([
+        0xAA, 0x10, 0, 0, 21, 8, i,
+        (g >> 8) & 0xff, g & 0xff,
+        (f >> 8) & 0xff, f & 0xff,
+        (qv >> 8) & 0xff, qv & 0xff,
+        TYPE_MAP[b.type], 0, 0xEE
+      ])
+      await device.sendReport(2, packet)
+      await sleep(20)
+    }
+    await sendMasterGain(masterGain())
+  }
+
+  let previewTimeout
+  createEffect(() => {
+    // Track changes to bands and masterGain
+    JSON.stringify(bands)
+    masterGain()
+    
+    if (status() === "Synced" && isConnected()) {
+      clearTimeout(previewTimeout)
+      previewTimeout = setTimeout(syncPreview, 250)
+    }
+  })
+
+  const resetToOriginal = () => {
+    batch(() => {
+      const original = originalBands()
+      if (original.length) {
+        for (let i = 0; i < original.length; i++) {
+          setBands(i, original[i])
+        }
+      }
+      setMasterGain(originalMasterGain())
+    })
   }
 
   const saveToDAC = async () => {
@@ -146,7 +216,7 @@ function App() {
       setBands(drag.index, 'q', parseFloat(newQ.toFixed(2)))
     } else {
       setBands(drag.index, 'freq', Math.max(20, Math.round(xToFreq(x))))
-      setBands(drag.index, 'gain', parseFloat((yToGain(y) - masterGain()).toFixed(1)))
+      setBands(drag.index, 'gain', parseFloat(yToGain(y).toFixed(1)))
     }
   }
 
@@ -192,7 +262,7 @@ function App() {
     let points = []
     for (let x = paddingLeft; x <= width; x += 3) {
       const f = xToFreq(x)
-      let totalGain = masterGain()
+      let totalGain = 0
       for (let i = 0; i < bands.length; i++) {
         totalGain += getBiquadMagnitude(bands[i].type, bands[i].freq, bands[i].gain, bands[i].q, f)
       }
@@ -213,6 +283,7 @@ function App() {
             <button onClick={connectDAC} style={{ padding: '8px 15px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer', 'border-radius': '4px' }}>Connect DAC</button>
           </Show>
           <Show when={isConnected()}>
+            <button onClick={resetToOriginal} style={{ padding: '8px 15px', background: '#6c757d', color: 'white', border: 'none', cursor: 'pointer', 'border-radius': '4px' }}>Reset Changes</button>
             <button onClick={() => setIsConnected(false)} style={{ padding: '8px 15px', background: '#444', color: 'white', border: 'none', cursor: 'pointer', 'border-radius': '4px' }}>Disconnect</button>
             <button onClick={saveToDAC} style={{ padding: '8px 15px', background: '#dc3545', color: 'white', border: 'none', cursor: 'pointer', 'border-radius': '4px' }}>SAVE ALL TO DAC</button>
           </Show>
@@ -243,7 +314,7 @@ function App() {
             
             <For each={bands}>{(band, i) => {
               const cx = createMemo(() => freqToX(band.freq))
-              const cy = createMemo(() => gainToY(band.gain + masterGain()))
+              const cy = createMemo(() => gainToY(band.gain))
               
               return (
                 <g onPointerDown={(e) => {
@@ -304,6 +375,31 @@ function App() {
           </div>
         )}</For>
       </div>
+
+      <Show when={toast()}>
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#333',
+          color: '#fff',
+          padding: '12px 20px',
+          'border-radius': '4px',
+          'box-shadow': '0 4px 12px rgba(0,0,0,0.5)',
+          'border-left': '4px solid #ff3e00',
+          'z-index': 1000,
+          animation: 'fadeIn 0.3s'
+        }}>
+          {toast()}
+        </div>
+      </Show>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   )
 }
