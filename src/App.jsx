@@ -133,15 +133,7 @@ function App() {
   }
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        "font-family": "sans-serif",
-        "background-color": "#111",
-        color: "#eee",
-        "min-height": "100vh",
-      }}
-    >
+    <div class="bg-[#121212]">
       <div
         style={{
           display: "flex",
