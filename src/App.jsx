@@ -30,7 +30,7 @@ function App() {
     JSON.stringify(bands);
     masterGain();
 
-    if (status() === "Synced" && isConnected()) {
+    if (status() === "synced" && isConnected()) {
       clearTimeout(previewTimeout);
       previewTimeout = setTimeout(syncPreview, 250);
     }
@@ -245,7 +245,7 @@ function App() {
       <br />
       <br />
 
-      <Show when={!isConnected()} fallback={Landing}>
+      <Show when={isConnected()} fallback={Landing}>
         <div class="header">
           <div style={{ display: "flex", gap: "0.6rem" }}>
             <div class="primary">{productName()}</div>

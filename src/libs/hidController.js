@@ -102,7 +102,7 @@ export async function sendMasterGain(val) {
 }
 
 export async function syncPreview() {
-  if (!device || status() !== "Synced") return;
+  if (!device || status() !== "synced") return;
   for (let i = 0; i < bands.length; i++) {
     const b = bands[i];
     let g = Math.round(b.gain * 10);
