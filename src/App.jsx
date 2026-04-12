@@ -106,8 +106,7 @@ function App() {
 
   function handleEqPointerClick(index, e) {
     e.preventDefault();
-    console.log(index, e.ctrlKey);
-    if (e.ctrlKey) {
+    if (e.ctrlKey || e.metaKey) {
       const newFilterIndex = (BAND_ORDER.indexOf(bands[index].type) + 1) % 3;
       setBands(index, "type", BAND_ORDER[newFilterIndex]);
     }
@@ -218,29 +217,6 @@ function App() {
     return 10 * Math.log10(numMagSq / denMagSq);
   }
 
-  function Landing() {
-    return (
-      <>
-        <button id="connect-device" class="primary" type="button" onClick={connectDAC}>
-          connect device
-        </button>
-
-        <div class="mobile-warning">
-          <br />
-          this website is only supported on a desktop browser / increase the screen width
-        </div>
-
-        <br />
-        <br />
-        <br />
-
-        <div class="info-text">
-          <p>the only supported device is the fiio x jadeaudio ja11 since that’s the only one i have :]</p>
-        </div>
-      </>
-    );
-  }
-
   return (
     <div class="app-container">
       <div class="header">
@@ -257,246 +233,289 @@ function App() {
         </div>
       </div>
 
-      <br />
-      <br />
+      <Show when={!isConnected()}>
+        <br />
+        <br />
+        <button id="connect-device" class="primary" type="button" onClick={connectDAC}>
+          connect device
+        </button>
 
-      <Show when={isConnected()} fallback={Landing}>
-        <div style={{ display: "flex", gap: "0.6rem" }}>
-          <div class="secondary">{productName().toLowerCase()}</div>
-          <div class="status" data-status={status()}>
-            {status()}
-          </div>
+        <div class="mobile-warning">
+          <br />
+          this website is only supported on a desktop browser / increase the screen width
+          <br />
+          <br />
+          <br />
+          <br />
         </div>
 
+        <p>the one supported device is the fiio jadeaudio ja11 since its the only one i have :]</p>
         <br />
-        <div style={{ display: "flex", gap: "0.6rem" }}>
-          <button onClick={importData} type="button" class="primary">
-            import
-          </button>
-
-          <button onClick={exportData} type="button" class="primary">
-            export
-          </button>
-
-          <button onClick={resetToDefaults} type="button" class="primary">
-            defaults
-          </button>
-          <button onClick={resetToOriginal} type="button" class="primary">
-            reset
-          </button>
-          <button onClick={saveToDAC} type="button" class="primary">
-            write and exit
-          </button>
-        </div>
-
-        <br />
-        <div class="graph-and-gain">
-          <svg
-            ref={svgRef}
-            width={width + paddingRight}
-            height={totalHeight}
-            onPointerMove={handlePointerMove}
-            onPointerUp={() => setDragging(null)}
-            style={{ "touch-action": "none" }}
-            aria-label="bandControl"
+        <p>
+          if you want me to reverse engineer other dacs, please do let me know!{" "}
+          <button
+            class="email"
+            type="button"
+            onClick={async (e) => {
+              e.preventDefault();
+              await navigator.clipboard.writeText("me@adithya.zip");
+              alert("email copied");
+            }}
           >
-            <g class="graph-lines">
-              {[20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000].map((f) => {
-                let textAnchor = "middle";
-                if (f === 20) {
-                  textAnchor = "start";
-                }
-                if (f === 20000) {
-                  textAnchor = "end";
-                }
-                return (
-                  <g>
-                    <Show when={![20, 20000].includes(f)}>
-                      <line x1={freqToX(f)} y1="0" x2={freqToX(f)} y2={plotHeight} />
-                    </Show>
-                    <text x={freqToX(f)} y={plotHeight + 20} text-anchor={textAnchor}>
-                      {f >= 1000 ? `${f / 1000}k` : f}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {[-12, -6, 0, 6, 12].map((g) => {
-                let dominant = "middle";
-                if (g === 12) {
-                  dominant = "hanging";
-                }
-                if (g === -12) {
-                  dominant = "ideographic";
-                }
-                return (
-                  <g>
-                    <Show when={![-12, 12].includes(g)}>
-                      <line
-                        x1={paddingLeft}
-                        y1={gainToY(g)}
-                        x2={paddingLeft + chartWidth + paddingRight}
-                        y2={gainToY(g)}
-                      />
-                    </Show>
-                    <text x={paddingLeft - 15} y={gainToY(g) + 4} text-anchor="end" dominant-baseline={dominant}>
-                      {g}
-                    </text>
-                  </g>
-                );
-              })}
-            </g>
-
-            <path d={eqPath()} fill="none" stroke="#e2e2e2" stroke-width="2" />
-
-            <For each={bands}>
-              {(band, i) => {
-                const cx = createMemo(() => freqToX(band.freq));
-                const cy = createMemo(() => gainToY(band.gain));
-
-                return (
-                  // biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
-                  <g
-                    onPointerDown={(e) => {
-                      e.target.setPointerCapture(e.pointerId);
-                      setDragging({ index: i(), startY: e.clientY, startQ: band.q });
-                    }}
-                    onClick={(e) => handleEqPointerClick(i(), e)}
-                    style={{ cursor: "move" }}
-                    class="eq-point"
-                  >
-                    <rect x={cx() - 10} y={cy() - 10} width="20" height="20" />
-                    <text x={cx()} y={cy()} text-anchor="middle" dy=".3em" pointer-events="none">
-                      {i() + 1}
-                    </text>
-                  </g>
-                );
-              }}
-            </For>
-          </svg>
-
-          <div class="master-gain">
-            <div
-              class="fader"
-              onPointerDown={handleGainPointerDown}
-              onPointerMove={handleGainPointerMove}
-              onPointerUp={handleGainPointerUp}
-            >
-              <div class="fader-track-line" />
-              <div
-                class="fader-handle"
-                style={{
-                  top: `${((12 - masterGain()) / 24) * 260 + 10}px`,
-                  transform: "translateY(-50%)",
-                }}
-              >
-                GAIN
-              </div>
-
-              <div class="fader-value-box">{masterGain().toFixed(1)}db</div>
-            </div>
-          </div>
-        </div>
-        <table>
-          <tr>
-            <td>click drag</td>
-            <td>adjust gain and freq</td>
-          </tr>
-          <tr>
-            <td>alt+click drag</td>
-            <td>adjust Q factor</td>
-          </tr>
-          <tr>
-            <td>ctrl+click</td>
-            <td>cycle through filters</td>
-          </tr>
-        </table>
-        <div class="bands-container">
-          <For each={bands}>
-            {(band, i) => (
-              <div class="band-card">
-                <div
-                  class="band-fader-container"
-                  onPointerDown={(e) => handleBandGainPointerDown(i(), e)}
-                  onPointerMove={(e) => handleBandGainPointerMove(i(), e)}
-                  onPointerUp={(e) => handleBandGainPointerUp(i(), e)}
-                  style={{ "touch-action": "none" }}
-                >
-                  <div class="fader fader-inverted">
-                    <div class="fader-track-line" />
-                    <div
-                      class="fader-handle"
-                      style={{
-                        top: `${((12 - band.gain) / 24) * 260 + 10}px`,
-                        transform: "translateY(-50%)",
-                      }}
-                    >
-                      {i() + 1}
-                    </div>
-
-                    <div class="fader-value-box">{band.gain.toFixed(1)}db</div>
-                  </div>
-                </div>
-
-                <div class="band-inputs">
-                  <select class="secondary" value={band.type} onChange={(e) => setBands(i(), "type", e.target.value)}>
-                    <option value="PK">PK</option>
-                    <option value="LSC">LSC</option>
-                    <option value="HSC">HSC</option>
-                  </select>
-
-                  <div class="band-numeric-input">
-                    <div class="input-with-unit">
-                      <input
-                        type="number"
-                        value={band.freq}
-                        style={{ width: `${band.freq.toString().length}ch` }}
-                        onInput={(e) => setBands(i(), "freq", Number.parseInt(e.target.value, 10) || 0)}
-                      />
-                      <span class="unit">Hz</span>
-                    </div>
-                  </div>
-                  <div class="band-numeric-input">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={band.q}
-                      style={{ width: `${band.q.toString().length}ch` }}
-                      onInput={(e) =>
-                        setBands(i(), "q", Math.max(0.25, Math.min(8, Number.parseFloat(e.target.value) || 0.25)))
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </For>
-        </div>
-        <br />
+            me@adithya.zip
+          </button>
+        </p>
+        <p>
+          the project is open source on{" "}
+          <a href="https://github.com/adithyasource/fiiocontrol-oss" target="_blank" class="email">
+            github
+          </a>{" "}
+          so if you face any issues or want to contribute, feel free to open an issue or pull request!
+        </p>
       </Show>
 
-      <p style={{ display: "inline-block", width: !isConnected() ? "70%" : "" }}>
-        if you want me to reverse engineer other dacs, please do let me know!{" "}
-        <button
-          class="email"
-          type="button"
-          onClick={async (e) => {
-            e.preventDefault();
-            await navigator.clipboard.writeText("me@adithya.zip");
-            alert("email copied");
-          }}
-        >
-          me@adithya.zip
-        </button>
-      </p>
       <br />
-      <p style={{ display: "inline-block", width: !isConnected() ? "70%" : "" }}>
-        the project is open source on{" "}
-        <a href="https://github.com/adithyasource/fiiocontrol-oss" target="_blank" class="email">
-          github
-        </a>{" "}
-        so if you face any issues or want to contribute, feel free to open an issue or pull request!
-      </p>
+      <br />
+
+      <div style={{ display: "flex", gap: "0.6rem" }}>
+        <div class="secondary">{productName().toLowerCase()}</div>
+        <div class="status" data-status={status()}>
+          {status()}
+        </div>
+      </div>
+
+      <br />
+      <div style={{ display: "flex", gap: "0.6rem" }}>
+        <button onClick={importData} type="button" class="primary">
+          import
+        </button>
+
+        <button onClick={exportData} type="button" class="primary">
+          export
+        </button>
+
+        <button onClick={resetToDefaults} type="button" class="primary">
+          defaults
+        </button>
+        <button onClick={resetToOriginal} type="button" class="primary">
+          reset
+        </button>
+        <button onClick={saveToDAC} type="button" class="primary">
+          write and exit
+        </button>
+      </div>
+
+      <br />
+      <div class="graph-and-gain">
+        <svg
+          ref={svgRef}
+          width={width + paddingRight}
+          height={totalHeight}
+          onPointerMove={handlePointerMove}
+          onPointerUp={() => setDragging(null)}
+          style={{ "touch-action": "none" }}
+          aria-label="bandControl"
+        >
+          <g class="graph-lines">
+            {[20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000].map((f) => {
+              let textAnchor = "middle";
+              if (f === 20) {
+                textAnchor = "start";
+              }
+              if (f === 20000) {
+                textAnchor = "end";
+              }
+              return (
+                <g>
+                  <Show when={![20, 20000].includes(f)}>
+                    <line x1={freqToX(f)} y1="0" x2={freqToX(f)} y2={plotHeight} />
+                  </Show>
+                  <text x={freqToX(f)} y={plotHeight + 20} text-anchor={textAnchor}>
+                    {f >= 1000 ? `${f / 1000}k` : f}
+                  </text>
+                </g>
+              );
+            })}
+
+            {[-12, -6, 0, 6, 12].map((g) => {
+              let dominant = "middle";
+              if (g === 12) {
+                dominant = "hanging";
+              }
+              if (g === -12) {
+                dominant = "ideographic";
+              }
+              return (
+                <g>
+                  <Show when={![-12, 12].includes(g)}>
+                    <line
+                      x1={paddingLeft}
+                      y1={gainToY(g)}
+                      x2={paddingLeft + chartWidth + paddingRight}
+                      y2={gainToY(g)}
+                    />
+                  </Show>
+                  <text x={paddingLeft - 15} y={gainToY(g) + 4} text-anchor="end" dominant-baseline={dominant}>
+                    {g}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+
+          <path d={eqPath()} fill="none" stroke="#e2e2e2" stroke-width="2" />
+
+          <For each={bands}>
+            {(band, i) => {
+              const cx = createMemo(() => freqToX(band.freq));
+              const cy = createMemo(() => gainToY(band.gain));
+
+              return (
+                // biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
+                <g
+                  onPointerDown={(e) => {
+                    e.target.setPointerCapture(e.pointerId);
+                    setDragging({ index: i(), startY: e.clientY, startQ: band.q });
+                  }}
+                  onClick={(e) => handleEqPointerClick(i(), e)}
+                  style={{ cursor: "move" }}
+                  class="eq-point"
+                >
+                  <rect x={cx() - 10} y={cy() - 10} width="20" height="20" />
+                  <text x={cx()} y={cy()} text-anchor="middle" dy=".3em" pointer-events="none">
+                    {i() + 1}
+                  </text>
+                </g>
+              );
+            }}
+          </For>
+        </svg>
+
+        <div class="master-gain">
+          <div
+            class="fader"
+            onPointerDown={handleGainPointerDown}
+            onPointerMove={handleGainPointerMove}
+            onPointerUp={handleGainPointerUp}
+          >
+            <div class="fader-track-line" />
+            <div
+              class="fader-handle"
+              style={{
+                top: `${((12 - masterGain()) / 24) * 260 + 10}px`,
+                transform: "translateY(-50%)",
+              }}
+            >
+              GAIN
+            </div>
+
+            <div class="fader-value-box">{masterGain().toFixed(1)}db</div>
+          </div>
+        </div>
+      </div>
+      <table>
+        <tr>
+          <td>click drag</td>
+          <td>adjust gain and freq</td>
+        </tr>
+        <tr>
+          <td>alt+click drag</td>
+          <td>adjust Q factor</td>
+        </tr>
+        <tr>
+          <td>ctrl+click</td>
+          <td>cycle through filters</td>
+        </tr>
+      </table>
+      <div class="bands-container">
+        <For each={bands}>
+          {(band, i) => (
+            <div class="band-card">
+              <div
+                class="band-fader-container"
+                onPointerDown={(e) => handleBandGainPointerDown(i(), e)}
+                onPointerMove={(e) => handleBandGainPointerMove(i(), e)}
+                onPointerUp={(e) => handleBandGainPointerUp(i(), e)}
+                style={{ "touch-action": "none" }}
+              >
+                <div class="fader fader-inverted">
+                  <div class="fader-track-line" />
+                  <div
+                    class="fader-handle"
+                    style={{
+                      top: `${((12 - band.gain) / 24) * 260 + 10}px`,
+                      transform: "translateY(-50%)",
+                    }}
+                  >
+                    {i() + 1}
+                  </div>
+
+                  <div class="fader-value-box">{band.gain.toFixed(1)}db</div>
+                </div>
+              </div>
+
+              <div class="band-inputs">
+                <select class="secondary" value={band.type} onChange={(e) => setBands(i(), "type", e.target.value)}>
+                  <option value="PK">PK</option>
+                  <option value="LSC">LSC</option>
+                  <option value="HSC">HSC</option>
+                </select>
+
+                <div class="band-numeric-input">
+                  <div class="input-with-unit">
+                    <input
+                      type="number"
+                      value={band.freq}
+                      style={{ width: `${band.freq.toString().length}ch` }}
+                      onInput={(e) => setBands(i(), "freq", Number.parseInt(e.target.value, 10) || 0)}
+                    />
+                    <span class="unit">Hz</span>
+                  </div>
+                </div>
+                <div class="band-numeric-input">
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={band.q}
+                    style={{ width: `${band.q.toString().length}ch` }}
+                    onInput={(e) =>
+                      setBands(i(), "q", Math.max(0.25, Math.min(8, Number.parseFloat(e.target.value) || 0.25)))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </For>
+      </div>
+      <br />
+      <br />
+
+      <Show when={isConnected()}>
+        <p>
+          if you want me to reverse engineer other dacs, please do let me know!{" "}
+          <button
+            class="email"
+            type="button"
+            onClick={async (e) => {
+              e.preventDefault();
+              await navigator.clipboard.writeText("me@adithya.zip");
+              alert("email copied");
+            }}
+          >
+            me@adithya.zip
+          </button>
+        </p>
+        <p>
+          the project is open source on{" "}
+          <a href="https://github.com/adithyasource/fiiocontrol-oss" target="_blank" class="email">
+            github
+          </a>{" "}
+          so if you face any issues or want to contribute, feel free to open an issue or pull request!
+        </p>
+
+        <br />
+      </Show>
     </div>
   );
 }

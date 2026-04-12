@@ -19,6 +19,18 @@ body {
   display: none;
 }
 
+#connect-device {
+  display: flex;
+  justify-content: space-between;
+}
+
+#connect-device p {
+  width: 70%;
+  padding: 0px;
+  margin: 0px;
+  text-align: right;
+}
+
 @media (max-width: 700px) {
   body {
     width: 90%;
