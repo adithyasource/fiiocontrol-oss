@@ -4,12 +4,12 @@ import {
   connectDAC,
   exportData,
   handleDisconnect,
+  importData,
   resetToDefaults,
   resetToOriginal,
   saveToDAC,
   sendMasterGain,
   syncPreview,
-  importDataHandler,
 } from "./libs/hidController";
 import { bands, isConnected, masterGain, productName, setBands, setMasterGain, status } from "./libs/hidStore";
 
@@ -248,7 +248,7 @@ function App() {
       <br />
       <br />
 
-      <Show when={!isConnected()} fallback={Landing}>
+      <Show when={isConnected()} fallback={Landing}>
         <div style={{ display: "flex", gap: "0.6rem" }}>
           <div class="secondary">{productName().toLowerCase()}</div>
           <div class="status" data-status={status()}>
@@ -258,7 +258,7 @@ function App() {
 
         <br />
         <div style={{ display: "flex", gap: "0.6rem" }}>
-          <button onClick={importDataHandler} type="button" class="primary">
+          <button onClick={importData} type="button" class="primary">
             import
           </button>
 

@@ -150,13 +150,6 @@ export function resetToDefaults() {
   });
 }
 
-export function importData(data) {
-  batch(() => {
-    setBands(JSON.parse(JSON.stringify(data)));
-    setMasterGain(0);
-  });
-}
-
 export function exportData() {
   const data = {
     bands: bands,
@@ -181,7 +174,7 @@ export function exportData() {
   setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
-export async function importDataHandler() {
+export async function importData() {
   try {
     const [fileHandle] = await window.showOpenFilePicker({
       types: [
@@ -196,8 +189,10 @@ export async function importDataHandler() {
 
     try {
       const jsonData = JSON.parse(contents);
-      setBands(JSON.parse(JSON.stringify(jsonData.bands)));
-      setMasterGain(jsonData.masterGain);
+      batch(() => {
+        setBands(jsonData.bands);
+        setMasterGain(jsonData.masterGain);
+      });
     } catch (e) {
       setStatus(`json parse error: ${e.message}`);
       resetToOriginal();
