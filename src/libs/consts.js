@@ -6,6 +6,7 @@ export const MAX_GAIN = 12;
 
 export const TYPE_MAP = { PK: 0, LSC: 1, HSC: 2 };
 export const REV_TYPE_MAP = { 0: "PK", 1: "LSC", 2: "HSC" };
+export const BAND_ORDER = ["PK", "LSC", "HSC"];
 
 export const DEFAULT_BANDS = [
   { type: "PK", gain: 0, freq: 100, q: 0.7 },

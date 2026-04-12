@@ -145,9 +145,9 @@ svg line {
 
 .bands-container {
   display: flex;
-  margin-top: 30px;
-  overflow-x: auto;
-  padding: 3px;
+  margin-top: 1.2rem;
+  overflow-x: visible;
+  padding-top: 3px;
   justify-content: space-between;
 }
 
@@ -156,7 +156,7 @@ svg line {
   flex-direction: column;
   gap: 10px;
   align-items: center;
-  width: 5rem;
+  width: 4.5rem;
 }
 
 .band-inputs {
@@ -167,11 +167,9 @@ svg line {
   align-items: center;
 }
 
-.band-select {
-  background: #222;
-  color: #eee;
-  border: 1px solid #333;
-  padding: 2px;
+select option {
+  background-color: #121212;
+  color: #e2e2e2;
 }
 
 .band-numeric-input {
@@ -236,4 +234,16 @@ input[type="number"] {
 
 a {
   text-decoration: none;
+}
+
+table {
+  margin-top: 0.6rem;
+  padding: 0px;
+  width: 100%;
+  color: #e2e2e2;
+  opacity: 50%;
+}
+
+tr td:nth-child(2) {
+  text-align: right;
 }

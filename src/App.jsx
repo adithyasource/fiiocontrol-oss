@@ -1,5 +1,5 @@
 import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "solid-js";
-import { MAX_FREQ, MAX_GAIN, MIN_FREQ, SAMPLE_RATE } from "./libs/consts";
+import { BAND_ORDER, MAX_FREQ, MAX_GAIN, MIN_FREQ, SAMPLE_RATE } from "./libs/consts";
 import {
   connectDAC,
   exportData,
@@ -102,6 +102,15 @@ function App() {
   function handleBandGainPointerUp(_index, e) {
     draggingBandIdx = null;
     e.currentTarget.releasePointerCapture(e.pointerId);
+  }
+
+  function handleEqPointerClick(index, e) {
+    e.preventDefault();
+    console.log(index, e.ctrlKey);
+    if (e.ctrlKey) {
+      const newFilterIndex = (BAND_ORDER.indexOf(bands[index].type) + 1) % 3;
+      setBands(index, "type", BAND_ORDER[newFilterIndex]);
+    }
   }
 
   let svgRef;
@@ -248,7 +257,7 @@ function App() {
       <br />
       <br />
 
-      <Show when={isConnected()} fallback={Landing}>
+      <Show when={!isConnected()} fallback={Landing}>
         <div style={{ display: "flex", gap: "0.6rem" }}>
           <div class="secondary">{productName().toLowerCase()}</div>
           <div class="status" data-status={status()}>
@@ -343,11 +352,13 @@ function App() {
                 const cy = createMemo(() => gainToY(band.gain));
 
                 return (
+                  // biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
                   <g
                     onPointerDown={(e) => {
                       e.target.setPointerCapture(e.pointerId);
                       setDragging({ index: i(), startY: e.clientY, startQ: band.q });
                     }}
+                    onClick={(e) => handleEqPointerClick(i(), e)}
                     style={{ cursor: "move" }}
                     class="eq-point"
                   >
@@ -383,6 +394,20 @@ function App() {
             </div>
           </div>
         </div>
+        <table>
+          <tr>
+            <td>click drag</td>
+            <td>adjust gain and freq</td>
+          </tr>
+          <tr>
+            <td>alt+click drag</td>
+            <td>adjust Q factor</td>
+          </tr>
+          <tr>
+            <td>ctrl+click</td>
+            <td>cycle through filters</td>
+          </tr>
+        </table>
         <div class="bands-container">
           <For each={bands}>
             {(band, i) => (
@@ -444,6 +469,7 @@ function App() {
             )}
           </For>
         </div>
+        <br />
       </Show>
     </div>
   );
