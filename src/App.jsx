@@ -110,9 +110,9 @@ function App() {
   const [dragging, setDragging] = createSignal(null);
 
   const width = remToPx(34);
-  const totalHeight = 320;
-  const plotHeight = 300;
-  const paddingLeft = 35;
+  const totalHeight = 340;
+  const plotHeight = 310;
+  const paddingLeft = 45;
   const paddingRight = 10;
   const chartWidth = width - paddingLeft + 10;
 

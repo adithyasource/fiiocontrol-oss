@@ -58,12 +58,14 @@ button {
   display: flex;
   width: 100%;
   justify-content: space-between;
+  outline: 1px #e2e2e2 solid;
 }
 
 .graph-lines text {
   fill: #ffffff;
   opacity: 50%;
   font-size: 0.8rem;
+  padding-bottom: 10px;
 }
 
 svg line {
@@ -82,7 +84,7 @@ svg line {
 .fader {
   position: relative;
   width: 70px;
-  height: 20rem;
+  height: 340px;
   display: flex;
   flex-direction: column;
   align-items: center;
