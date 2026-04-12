@@ -11,6 +11,7 @@ import {
   setOriginalMasterGain,
   setStatus,
   status,
+  setProductName,
 } from "./hidStore";
 import { DEFAULT_BANDS, REV_TYPE_MAP, TYPE_MAP } from "./consts";
 import { showToast } from "./toastStore";
@@ -25,8 +26,9 @@ export function handleDisconnect(e) {
   if (e.device === device) {
     device = null;
     setIsConnected(false);
-    setStatus("Offline");
+    setStatus("offline");
     setBands(DEFAULT_BANDS);
+    setProductName("[disconnected]");
     showToast("Disconnected from DAC");
   }
 }
@@ -69,17 +71,18 @@ export async function connectDAC() {
     if (!device) return;
     await device.open();
     device.addEventListener("inputreport", handleInputReport);
+    setProductName(device.productName);
     setIsConnected(true);
-    setStatus("Connected");
+    setStatus("connected");
     await fetchAllData();
   } catch (err) {
-    setStatus(`Error: ${err.message}`);
+    setStatus(`error: ${err.message}`);
   }
 }
 
 export async function fetchAllData() {
   if (!device) return;
-  setStatus("Reading DAC...");
+  setStatus("reading dac...");
   await device.sendReport(2, new Uint8Array([0xbb, 0x0b, 0, 0, 23, 0, 0, 0xee]));
   await sleep(200);
   for (let i = 0; i < 5; i++) {
@@ -88,7 +91,7 @@ export async function fetchAllData() {
   }
   setOriginalBands(JSON.parse(JSON.stringify(bands)));
   setOriginalMasterGain(masterGain());
-  setStatus("Synced");
+  setStatus("synced");
 }
 
 export async function sendMasterGain(val) {
@@ -145,7 +148,7 @@ export function resetToOriginal() {
 
 export async function saveToDAC() {
   if (!device) return alert("Not connected");
-  setStatus("Saving...");
+  setStatus("saving");
   for (let i = 0; i < bands.length; i++) {
     const b = bands[i];
     let g = Math.round(b.gain * 10);
@@ -176,5 +179,5 @@ export async function saveToDAC() {
   }
   await sleep(50);
   await device.sendReport(2, new Uint8Array([0xaa, 0x0a, 0, 0, 25, 1, 3, 0, 0xee]));
-  setStatus("Saved");
+  setStatus("saved");
 }

@@ -15,11 +15,18 @@ body {
   margin: 1rem auto;
 }
 
-.primary {
+.primary,
+.status {
   border: none;
   background-color: #e2e2e2;
   color: #000000;
   padding: 0px 2px 0px 2px;
+  width: max-content;
+  height: max-content;
+}
+
+.status[data-status="online"] {
+  background-color: #00ff5d;
 }
 
 button {
@@ -33,6 +40,7 @@ button {
   outline: #e2e2e2 1px solid;
   padding: 0px 2px 0px 2px;
   width: max-content;
+  height: max-content;
 }
 
 .info-text p {
@@ -44,4 +52,29 @@ button {
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+
+.graph-and-gain {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.graph-lines text {
+  fill: #ffffff;
+  opacity: 50%;
+  font-size: 0.8rem;
+}
+
+svg line {
+  stroke: #ffffff;
+  opacity: 30%;
+}
+
+.eq-point rect {
+  fill: #e2e2e2;
+}
+
+.eq-point text {
+  fill: #000000;
 }

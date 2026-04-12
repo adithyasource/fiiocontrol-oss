@@ -8,7 +8,16 @@ import {
   sendMasterGain,
   syncPreview,
 } from "./libs/hidController";
-import { bands, isConnected, masterGain, setBands, setIsConnected, setMasterGain, status } from "./libs/hidStore";
+import {
+  bands,
+  isConnected,
+  masterGain,
+  productName,
+  setBands,
+  setIsConnected,
+  setMasterGain,
+  status,
+} from "./libs/hidStore";
 import { toast } from "./libs/toastStore";
 
 function App() {
@@ -27,19 +36,25 @@ function App() {
     }
   });
 
+  function remToPx(rem) {
+    const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    return rem * rootFontSize;
+  }
+
   // ---- VISUAL MATH ----
   let svgRef;
   const [dragging, setDragging] = createSignal(null);
 
-  const width = 800;
+  const width = remToPx(34);
   const totalHeight = 350;
   const plotHeight = 300;
-  const paddingLeft = 40;
-  const chartWidth = width - paddingLeft;
+  const paddingLeft = 50;
+  const paddingRight = 10;
+  const chartWidth = width - paddingLeft + 10;
 
   const freqToX = (f) =>
     paddingLeft + (Math.log10(Math.max(MIN_FREQ, f) / MIN_FREQ) / Math.log10(MAX_FREQ / MIN_FREQ)) * chartWidth;
-  const xToFreq = (x) => (MIN_FREQ * MAX_FREQ) / MIN_FREQ ** (x - paddingLeft) / chartWidth;
+  const xToFreq = (x) => MIN_FREQ * Math.pow(MAX_FREQ / MIN_FREQ, (x - paddingLeft) / chartWidth);
   const gainToY = (g) => plotHeight / 2 - (g / MAX_GAIN) * (plotHeight / 2);
   const yToGain = (y) => ((plotHeight / 2 - y) / (plotHeight / 2)) * MAX_GAIN;
 
@@ -62,7 +77,7 @@ function App() {
 
   const eqPath = createMemo(() => {
     let points = [];
-    for (let x = paddingLeft; x <= width; x += 3) {
+    for (let x = paddingLeft; x <= width + paddingRight; x += 3) {
       const f = xToFreq(x);
       let totalGain = 0;
       for (let i = 0; i < bands.length; i++) {
@@ -162,138 +177,112 @@ function App() {
       <br />
       <br />
 
-      <Show when={isConnected()} fallback={Landing}>
-        <button
-          onClick={resetToOriginal}
-          type="button"
-          style={{
-            padding: "8px 15px",
-            background: "#6c757d",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-            "border-radius": "4px",
-          }}
-        >
-          Reset Changes
-        </button>
-        <button
-          onClick={() => setIsConnected(false)}
-          type="button"
-          style={{
-            padding: "8px 15px",
-            background: "#444",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-            "border-radius": "4px",
-          }}
-        >
-          Disconnect
-        </button>
-        <button
-          onClick={saveToDAC}
-          type="button"
-          style={{
-            padding: "8px 15px",
-            background: "#dc3545",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-            "border-radius": "4px",
-          }}
-        >
-          SAVE ALL TO DAC
-        </button>
-        <div style={{ display: "flex", gap: "20px" }}>
-          <div
-            style={{
-              position: "relative",
-              width: `${width}px`,
-              height: `${totalHeight}px`,
-              background: "#000",
-              border: "1px solid #333",
-            }}
-          >
-            <svg
-              ref={svgRef}
-              width={width}
-              height={totalHeight}
-              onPointerMove={handlePointerMove}
-              onPointerUp={() => setDragging(null)}
-              style={{ "touch-action": "none" }}
-              aria-label="bandControl"
-            >
-              {[20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000].map((f) => (
-                <g>
-                  <line x1={freqToX(f)} y1="0" x2={freqToX(f)} y2={plotHeight} stroke="#222" />
-                  <text x={freqToX(f)} y={plotHeight + 20} fill="#888" font-size="10" text-anchor="middle">
-                    {f >= 1000 ? `${f / 1000}k` : f}
-                  </text>
-                </g>
-              ))}
-              {[-12, -6, 0, 6, 12].map((g) => (
-                <g>
-                  <line x1={paddingLeft} y1={gainToY(g)} x2={width} y2={gainToY(g)} stroke="#222" />
-                  <text x="5" y={gainToY(g) + 4} fill="#888" font-size="10">
-                    {g}
-                  </text>
-                </g>
-              ))}
-
-              <path d={eqPath()} fill="none" stroke="#ff3e00" stroke-width="2" />
-
-              <For each={bands}>
-                {(band, i) => {
-                  const cx = createMemo(() => freqToX(band.freq));
-                  const cy = createMemo(() => gainToY(band.gain));
-
-                  return (
-                    <g
-                      onPointerDown={(e) => {
-                        e.target.setPointerCapture(e.pointerId);
-                        setDragging({ index: i(), startY: e.clientY, startQ: band.q });
-                      }}
-                      style={{ cursor: "move" }}
-                    >
-                      <circle
-                        cx={cx()}
-                        cy={cy()}
-                        r="10"
-                        fill={dragging()?.index === i() ? "#ff3e00" : "#333"}
-                        stroke="#eee"
-                      />
-                      <text
-                        x={cx()}
-                        y={cy()}
-                        text-anchor="middle"
-                        dy=".3em"
-                        font-size="10"
-                        fill="#fff"
-                        pointer-events="none"
-                      >
-                        {i() + 1}
-                      </text>
-                    </g>
-                  );
-                }}
-              </For>
-            </svg>
+      <Show when={!isConnected()} fallback={Landing}>
+        <div class="header">
+          <div style={{ display: "flex", gap: "0.6rem" }}>
+            <div class="primary">{productName()}</div>
+            <div class="status" data-status={status()}>
+              {status()}
+            </div>
           </div>
+          <div style={{ display: "flex", gap: "0.6rem" }}>
+            <button onClick={resetToOriginal} type="button" class="primary">
+              reset
+            </button>
+            <button onClick={() => setIsConnected(false)} type="button" class="primary">
+              disconnect
+            </button>
+            <button onClick={saveToDAC} type="button" class="primary">
+              write to device
+            </button>
+          </div>
+        </div>
 
-          <div
-            style={{
-              border: "1px solid #333",
-              background: "#222",
-              padding: "15px",
-              display: "flex",
-              "flex-direction": "column",
-              "align-items": "center",
-              width: "100px",
-              "border-radius": "4px",
-              height: `${plotHeight}px`,
-            }}
+        <br />
+        <div class="graph-and-gain">
+          <svg
+            ref={svgRef}
+            width={width + paddingRight}
+            height={totalHeight}
+            onPointerMove={handlePointerMove}
+            onPointerUp={() => setDragging(null)}
+            style={{ "touch-action": "none" }}
+            aria-label="bandControl"
           >
+            <g class="graph-lines">
+              {[20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000].map((f) => {
+                let textAnchor = "middle";
+                if (f === 20) {
+                  textAnchor = "start";
+                }
+                if (f === 20000) {
+                  textAnchor = "end";
+                }
+                return (
+                  <g>
+                    <Show when={![20, 20000].includes(f)}>
+                      <line x1={freqToX(f)} y1="0" x2={freqToX(f)} y2={plotHeight} />
+                    </Show>
+                    <text x={freqToX(f)} y={plotHeight + 20} text-anchor={textAnchor}>
+                      {f >= 1000 ? `${f / 1000}k` : f}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {[-12, -6, 0, 6, 12].map((g) => {
+                let dominant = "middle";
+                if (g === 12) {
+                  dominant = "hanging";
+                }
+                if (g === -12) {
+                  dominant = "ideographic";
+                }
+                return (
+                  <g>
+                    <Show when={![-12, 12].includes(g)}>
+                      <line
+                        x1={paddingLeft}
+                        y1={gainToY(g)}
+                        x2={paddingLeft + chartWidth + paddingRight}
+                        y2={gainToY(g)}
+                      />
+                    </Show>
+                    <text x={paddingLeft - 30} y={gainToY(g) + 4} text-anchor="end" dominant-baseline={dominant}>
+                      {g}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+
+            <path d={eqPath()} fill="none" stroke="#e2e2e2" stroke-width="2" />
+
+            <For each={bands}>
+              {(band, i) => {
+                const cx = createMemo(() => freqToX(band.freq));
+                const cy = createMemo(() => gainToY(band.gain));
+
+                return (
+                  <g
+                    onPointerDown={(e) => {
+                      e.target.setPointerCapture(e.pointerId);
+                      setDragging({ index: i(), startY: e.clientY, startQ: band.q });
+                    }}
+                    style={{ cursor: "move" }}
+                    class="eq-point"
+                  >
+                    <rect x={cx() - 10} y={cy() - 10} width="20" height="20" />
+                    <text x={cx()} y={cy()} text-anchor="middle" dy=".3em" pointer-events="none">
+                      {i() + 1}
+                    </text>
+                  </g>
+                );
+              }}
+            </For>
+          </svg>
+
+          <div>
             <h3 style={{ margin: "0 0 10px 0", "font-size": "14px", color: "#ffcc00" }}>Master</h3>
             <label style={{ "font-size": "12px", color: "#ffcc00" }}>{masterGain()} dB</label>
             <input
