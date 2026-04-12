@@ -14,7 +14,6 @@ import {
   setProductName,
 } from "./hidStore";
 import { DEFAULT_BANDS, REV_TYPE_MAP, TYPE_MAP } from "./consts";
-import { showToast } from "./toastStore";
 
 let device = null;
 
@@ -29,7 +28,6 @@ export function handleDisconnect(e) {
     setStatus("offline");
     setBands(DEFAULT_BANDS);
     setProductName("[disconnected]");
-    showToast("Disconnected from DAC");
   }
 }
 
@@ -139,10 +137,22 @@ export function resetToOriginal() {
     const original = originalBands();
     if (original.length) {
       for (let i = 0; i < original.length; i++) {
-        setBands(i, original[i]);
+        setBands(i, { ...original[i] });
       }
     }
     setMasterGain(originalMasterGain());
+  });
+}
+
+export function resetToDefaults() {
+  batch(() => {
+    const original = DEFAULT_BANDS;
+    if (original.length) {
+      for (let i = 0; i < original.length; i++) {
+        setBands(i, { ...original[i] });
+      }
+    }
+    setMasterGain(0);
   });
 }
 

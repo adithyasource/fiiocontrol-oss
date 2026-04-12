@@ -8,17 +8,7 @@ import {
   sendMasterGain,
   syncPreview,
 } from "./libs/hidController";
-import {
-  bands,
-  isConnected,
-  masterGain,
-  productName,
-  setBands,
-  setIsConnected,
-  setMasterGain,
-  status,
-} from "./libs/hidStore";
-import { toast } from "./libs/toastStore";
+import { bands, isConnected, masterGain, productName, setBands, setMasterGain, status } from "./libs/hidStore";
 
 function App() {
   navigator.hid.addEventListener("disconnect", handleDisconnect);
@@ -234,12 +224,17 @@ function App() {
   return (
     <div class="">
       <div class="header">
-        <button class="secondary" type="button">
+        <a href="https://github.com/adithyasource/fiiocontrol-oss" class="secondary" target="_blank" rel="noopener">
           fiiocontrol-oss
-        </button>
-        <button class="secondary" type="button">
-          by adithya
-        </button>
+        </a>
+        <div style={{ display: "flex", gap: "0.6rem" }}>
+          <a href="http://adithya.zip/" class="secondary" target="_blank" rel="noopener">
+            by adithya
+          </a>
+          <a href="https://ko-fi.com/adithyasource" class="secondary" target="_blank" rel="noopener">
+            coffee?
+          </a>
+        </div>
       </div>
 
       <br />
@@ -248,7 +243,7 @@ function App() {
       <Show when={isConnected()} fallback={Landing}>
         <div class="header">
           <div style={{ display: "flex", gap: "0.6rem" }}>
-            <div class="primary">{productName()}</div>
+            <div class="primary">{productName().toLowerCase()}</div>
             <div class="status" data-status={status()}>
               {status()}
             </div>
@@ -257,11 +252,8 @@ function App() {
             <button onClick={resetToOriginal} type="button" class="primary">
               reset
             </button>
-            <button onClick={() => setIsConnected(false)} type="button" class="primary">
-              disconnect
-            </button>
             <button onClick={saveToDAC} type="button" class="primary">
-              write to device
+              write and exit
             </button>
           </div>
         </div>
@@ -434,32 +426,6 @@ function App() {
           </For>
         </div>
       </Show>
-
-      <Show when={toast()}>
-        <div
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            background: "#333",
-            color: "#fff",
-            padding: "12px 20px",
-            "border-radius": "4px",
-            "box-shadow": "0 4px 12px rgba(0,0,0,0.5)",
-            "border-left": "4px solid #ff3e00",
-            "z-index": 1000,
-            animation: "fadeIn 0.3s",
-          }}
-        >
-          {toast()}
-        </div>
-      </Show>
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }

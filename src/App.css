@@ -25,7 +25,8 @@ body {
   height: max-content;
 }
 
-.status[data-status="online"] {
+.status[data-status="online"],
+.status[data-status="synced"] {
   background-color: #00ff5d;
 }
 
@@ -231,4 +232,8 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+a {
+  text-decoration: none;
 }
