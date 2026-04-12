@@ -1,1 +1,47 @@
-@import "tailwindcss"
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap");
+
+html {
+  background-color: #121212;
+}
+
+* {
+  font-family: "Geist Mono";
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+body {
+  width: 40rem;
+  margin: 1rem auto;
+}
+
+.primary {
+  border: none;
+  background-color: #e2e2e2;
+  color: #000000;
+  padding: 0px 2px 0px 2px;
+}
+
+button {
+  cursor: pointer;
+}
+
+.secondary {
+  border: none;
+  color: #e2e2e2;
+  background-color: transparent;
+  outline: #e2e2e2 1px solid;
+  padding: 0px 2px 0px 2px;
+  width: max-content;
+}
+
+.info-text p {
+  width: 70%;
+  color: #e2e2e2;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
