@@ -3,6 +3,7 @@ import { MAX_FREQ, MAX_GAIN, MIN_FREQ, SAMPLE_RATE } from "./libs/consts";
 import {
   connectDAC,
   handleDisconnect,
+  resetToDefaults,
   resetToOriginal,
   saveToDAC,
   sendMasterGain,
@@ -17,7 +18,12 @@ function App() {
   let previewTimeout;
   createEffect(() => {
     // Track changes to bands and masterGain
-    JSON.stringify(bands);
+    for (let i = 0; i < bands.length; i++) {
+      bands[i].freq;
+      bands[i].gain;
+      bands[i].q;
+      bands[i].type;
+    }
     masterGain();
 
     if (status() === "synced" && isConnected()) {
@@ -249,6 +255,9 @@ function App() {
             </div>
           </div>
           <div style={{ display: "flex", gap: "0.6rem" }}>
+            <button onClick={resetToDefaults} type="button" class="primary">
+              defaults
+            </button>
             <button onClick={resetToOriginal} type="button" class="primary">
               reset
             </button>

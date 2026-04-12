@@ -26,7 +26,7 @@ export function handleDisconnect(e) {
     device = null;
     setIsConnected(false);
     setStatus("offline");
-    setBands(DEFAULT_BANDS);
+    setBands(JSON.parse(JSON.stringify(DEFAULT_BANDS)));
     setProductName("[disconnected]");
   }
 }
@@ -133,25 +133,18 @@ export async function syncPreview() {
 }
 
 export function resetToOriginal() {
-  batch(() => {
-    const original = originalBands();
-    if (original.length) {
-      for (let i = 0; i < original.length; i++) {
-        setBands(i, { ...original[i] });
-      }
-    }
-    setMasterGain(originalMasterGain());
-  });
+  const original = originalBands();
+  if (original.length) {
+    batch(() => {
+      setBands(JSON.parse(JSON.stringify(original)));
+      setMasterGain(originalMasterGain());
+    });
+  }
 }
 
 export function resetToDefaults() {
   batch(() => {
-    const original = DEFAULT_BANDS;
-    if (original.length) {
-      for (let i = 0; i < original.length; i++) {
-        setBands(i, { ...original[i] });
-      }
-    }
+    setBands(JSON.parse(JSON.stringify(DEFAULT_BANDS)));
     setMasterGain(0);
   });
 }
