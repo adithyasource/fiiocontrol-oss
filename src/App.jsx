@@ -221,9 +221,14 @@ function App() {
   function Landing() {
     return (
       <>
-        <button class="primary" type="button" onClick={connectDAC}>
+        <button id="connect-device" class="primary" type="button" onClick={connectDAC}>
           connect device
         </button>
+
+        <div class="mobile-warning">
+          <br />
+          this website is only supported on a desktop browser / increase the screen width
+        </div>
 
         <br />
         <br />
@@ -251,7 +256,7 @@ function App() {
   }
 
   return (
-    <div class="">
+    <div class="app-container">
       <div class="header">
         <a href="https://github.com/adithyasource/fiiocontrol-oss" class="secondary" target="_blank" rel="noopener">
           fiiocontrol-oss

@@ -15,6 +15,25 @@ body {
   margin: 1rem auto;
 }
 
+.mobile-warning {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  body {
+    width: 90%;
+    margin: 2rem auto;
+  }
+  #connect-device {
+    display: none;
+  }
+  .mobile-warning {
+    display: block;
+    color: #e2e2e2;
+    line-height: 1.5;
+  }
+}
+
 .primary,
 .status {
   border: none;
