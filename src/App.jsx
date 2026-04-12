@@ -2,12 +2,14 @@ import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "so
 import { MAX_FREQ, MAX_GAIN, MIN_FREQ, SAMPLE_RATE } from "./libs/consts";
 import {
   connectDAC,
+  exportData,
   handleDisconnect,
   resetToDefaults,
   resetToOriginal,
   saveToDAC,
   sendMasterGain,
   syncPreview,
+  importDataHandler,
 } from "./libs/hidController";
 import { bands, isConnected, masterGain, productName, setBands, setMasterGain, status } from "./libs/hidStore";
 
@@ -246,25 +248,33 @@ function App() {
       <br />
       <br />
 
-      <Show when={isConnected()} fallback={Landing}>
-        <div class="header">
-          <div style={{ display: "flex", gap: "0.6rem" }}>
-            <div class="primary">{productName().toLowerCase()}</div>
-            <div class="status" data-status={status()}>
-              {status()}
-            </div>
+      <Show when={!isConnected()} fallback={Landing}>
+        <div style={{ display: "flex", gap: "0.6rem" }}>
+          <div class="secondary">{productName().toLowerCase()}</div>
+          <div class="status" data-status={status()}>
+            {status()}
           </div>
-          <div style={{ display: "flex", gap: "0.6rem" }}>
-            <button onClick={resetToDefaults} type="button" class="primary">
-              defaults
-            </button>
-            <button onClick={resetToOriginal} type="button" class="primary">
-              reset
-            </button>
-            <button onClick={saveToDAC} type="button" class="primary">
-              write and exit
-            </button>
-          </div>
+        </div>
+
+        <br />
+        <div style={{ display: "flex", gap: "0.6rem" }}>
+          <button onClick={importDataHandler} type="button" class="primary">
+            import
+          </button>
+
+          <button onClick={exportData} type="button" class="primary">
+            export
+          </button>
+
+          <button onClick={resetToDefaults} type="button" class="primary">
+            defaults
+          </button>
+          <button onClick={resetToOriginal} type="button" class="primary">
+            reset
+          </button>
+          <button onClick={saveToDAC} type="button" class="primary">
+            write and exit
+          </button>
         </div>
 
         <br />

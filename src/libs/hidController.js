@@ -12,6 +12,7 @@ import {
   setStatus,
   status,
   setProductName,
+  productName,
 } from "./hidStore";
 import { DEFAULT_BANDS, REV_TYPE_MAP, TYPE_MAP } from "./consts";
 
@@ -147,6 +148,63 @@ export function resetToDefaults() {
     setBands(JSON.parse(JSON.stringify(DEFAULT_BANDS)));
     setMasterGain(0);
   });
+}
+
+export function importData(data) {
+  batch(() => {
+    setBands(JSON.parse(JSON.stringify(data)));
+    setMasterGain(0);
+  });
+}
+
+export function exportData() {
+  const data = {
+    bands: bands,
+    masterGain: masterGain(),
+  };
+
+  const jsonString = JSON.stringify(data, null, 2);
+
+  const blob = new Blob([jsonString], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  // creating fake anchor button temporarily
+  const a = document.createElement("a");
+  a.href = url;
+  const date = new Date();
+  a.download = `${productName().toLowerCase().replaceAll(" ", "_")}_config_${date.toLocaleString().toString().replaceAll(" ", "_").replace(",", "")}.json`;
+
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+export async function importDataHandler() {
+  try {
+    const [fileHandle] = await window.showOpenFilePicker({
+      types: [
+        {
+          accept: { "json/*": [".json"] },
+        },
+      ],
+      multiple: false,
+    });
+    const file = await fileHandle.getFile();
+    const contents = await file.text();
+
+    try {
+      const jsonData = JSON.parse(contents);
+      setBands(JSON.parse(JSON.stringify(jsonData.bands)));
+      setMasterGain(jsonData.masterGain);
+    } catch (e) {
+      setStatus(`json parse error: ${e.message}`);
+      resetToOriginal();
+    }
+  } catch (e) {
+    setStatus(`error: ${e.message}`);
+  }
 }
 
 export async function saveToDAC() {
