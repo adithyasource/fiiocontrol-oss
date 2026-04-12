@@ -257,7 +257,7 @@ function App() {
       <br />
       <br />
 
-      <Show when={!isConnected()} fallback={Landing}>
+      <Show when={isConnected()} fallback={Landing}>
         <div style={{ display: "flex", gap: "0.6rem" }}>
           <div class="secondary">{productName().toLowerCase()}</div>
           <div class="status" data-status={status()}>
