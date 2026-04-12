@@ -42,13 +42,78 @@ function App() {
   }
 
   // ---- VISUAL MATH ----
+  let draggingInput = false;
+
+  function handleGainPointerDown(e) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    draggingInput = true;
+  }
+
+  function handleGainPointerMove(e) {
+    if (!draggingInput) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    const availableHeight = 270;
+    const padding = 10;
+    const trackHeight = 260;
+
+    let y = e.clientY - rect.top - padding;
+    y = Math.max(0, Math.min(trackHeight, y));
+
+    // invert (0 = +12, 260 = -12)
+    let value = 12 - (y / trackHeight) * 24;
+
+    // clamp
+    value = Math.max(-12, Math.min(12, value));
+
+    setMasterGain(value);
+    sendMasterGain(value);
+  }
+
+  const handleGainPointerUp = (e) => {
+    draggingInput = false;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
+  let draggingBandIdx = null;
+
+  function handleBandGainPointerDown(index, e) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    draggingBandIdx = index;
+  }
+
+  function handleBandGainPointerMove(index, e) {
+    if (draggingBandIdx !== index) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const trackHeight = 260;
+    const padding = 10;
+
+    let y = e.clientY - rect.top - padding;
+    y = Math.max(0, Math.min(trackHeight, y));
+
+    // invert (0 = +12, 260 = -12)
+    let value = 12 - (y / trackHeight) * 24;
+
+    // clamp
+    value = Math.max(-12, Math.min(12, value));
+
+    setBands(index, "gain", Number.parseFloat(value.toFixed(1)));
+  }
+
+  function handleBandGainPointerUp(index, e) {
+    draggingBandIdx = null;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  }
+
   let svgRef;
   const [dragging, setDragging] = createSignal(null);
 
   const width = remToPx(34);
-  const totalHeight = 350;
+  const totalHeight = 320;
   const plotHeight = 300;
-  const paddingLeft = 50;
+  const paddingLeft = 35;
   const paddingRight = 10;
   const chartWidth = width - paddingLeft + 10;
 
@@ -248,7 +313,7 @@ function App() {
                         y2={gainToY(g)}
                       />
                     </Show>
-                    <text x={paddingLeft - 30} y={gainToY(g) + 4} text-anchor="end" dominant-baseline={dominant}>
+                    <text x={paddingLeft - 15} y={gainToY(g) + 4} text-anchor="end" dominant-baseline={dominant}>
                       {g}
                     </text>
                   </g>
@@ -282,78 +347,58 @@ function App() {
             </For>
           </svg>
 
-          <div>
-            <h3 style={{ margin: "0 0 10px 0", "font-size": "14px", color: "#ffcc00" }}>Master</h3>
-            <label style={{ "font-size": "12px", color: "#ffcc00" }}>{masterGain()} dB</label>
-            <input
-              type="range"
-              min="-12"
-              max="12"
-              step="0.1"
-              orient="vertical"
-              value={masterGain()}
-              onInput={(e) => {
-                const val = Number.parseFloat(e.target.value);
-                setMasterGain(val);
-                sendMasterGain(val);
-              }}
-              style={{
-                "writing-mode": "bt-lr",
-                "-webkit-appearance": "slider-vertical",
-                width: "30px",
-                height: "180px",
-              }}
-            />
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: "15px", "flex-wrap": "wrap", "margin-top": "20px" }}>
-          <For each={bands}>
-            {(band, i) => (
+          <div class="master-gain">
+            <div
+              class="fader"
+              onPointerDown={handleGainPointerDown}
+              onPointerMove={handleGainPointerMove}
+              onPointerUp={handleGainPointerUp}
+            >
+              <div class="fader-track-line" />
               <div
+                class="fader-handle"
                 style={{
-                  border: "1px solid #333",
-                  background: "#222",
-                  padding: "15px",
-                  display: "flex",
-                  "flex-direction": "column",
-                  "align-items": "center",
-                  width: "130px",
-                  "border-radius": "4px",
+                  top: `${((12 - masterGain()) / 24) * 260 + 10}px`,
+                  transform: "translateY(-50%)",
                 }}
               >
-                <h3 style={{ margin: "0 0 10px 0", color: "#ffcc00" }}>Band {i() + 1}</h3>
+                GAIN
+              </div>
 
+              <div class="fader-value-box">{masterGain().toFixed(1)}db</div>
+            </div>
+          </div>
+        </div>
+        <div class="bands-container">
+          <For each={bands}>
+            {(band, i) => (
+              <div class="band-card">
                 <div
-                  style={{
-                    display: "flex",
-                    "flex-direction": "column",
-                    "align-items": "center",
-                    "margin-bottom": "15px",
-                  }}
+                  class="band-fader-container"
+                  onPointerDown={(e) => handleBandGainPointerDown(i(), e)}
+                  onPointerMove={(e) => handleBandGainPointerMove(i(), e)}
+                  onPointerUp={(e) => handleBandGainPointerUp(i(), e)}
+                  style={{ "touch-action": "none" }}
                 >
-                  <label style={{ "font-size": "12px", "margin-bottom": "5px", color: "#ffcc00" }}>
-                    {band.gain} dB
-                  </label>
-                  <input
-                    type="range"
-                    min={MIN_GAIN}
-                    max={MAX_GAIN}
-                    step="0.1"
-                    orient="vertical"
-                    value={band.gain}
-                    onInput={(e) => setBands(i(), "gain", Number.parseFloat(e.target.value))}
-                    style={{
-                      "writing-mode": "bt-lr",
-                      "-webkit-appearance": "slider-vertical",
-                      width: "20px",
-                      height: "120px",
-                    }}
-                  />
+                  <div class="fader">
+                    <div class="fader-track-line" />
+                    <div
+                      class="fader-handle"
+                      style={{
+                        top: `${((12 - band.gain) / 24) * 260 + 10}px`,
+                        transform: "translateY(-50%)",
+                      }}
+                    >
+                      B {i() + 1}
+                    </div>
+
+                    <div class="fader-value-box">{band.gain.toFixed(1)}db</div>
+                  </div>
                 </div>
 
-                <div style={{ display: "flex", "flex-direction": "column", gap: "8px", width: "100%" }}>
+                <div class="band-inputs">
                   <select
-                    style={{ width: "100%", background: "#333", color: "#eee", border: "none", padding: "4px" }}
+                    class="band-select"
                     value={band.type}
                     onChange={(e) => setBands(i(), "type", e.target.value)}
                   >
@@ -362,40 +407,24 @@ function App() {
                     <option value="HSC">HSC</option>
                   </select>
 
-                  <div style={{ "font-size": "11px", width: "100%" }}>
-                    <div style={{ display: "flex", "justify-content": "space-between", "margin-bottom": "2px" }}>
-                      <span>Freq:</span>
-                      <input
-                        type="number"
-                        value={band.freq}
-                        onInput={(e) => setBands(i(), "freq", Number.parseInt(e.target.value, 10) || 0)}
-                        style={{
-                          width: "55px",
-                          background: "transparent",
-                          color: "#eee",
-                          border: "none",
-                          "text-align": "right",
-                        }}
-                      />
-                    </div>
-                    <div style={{ display: "flex", "justify-content": "space-between" }}>
-                      <span>Q:</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={band.q}
-                        onInput={(e) =>
-                          setBands(i(), "q", Math.max(0.25, Math.min(8, Number.parseFloat(e.target.value) || 0.25)))
-                        }
-                        style={{
-                          width: "55px",
-                          background: "transparent",
-                          color: "#eee",
-                          border: "none",
-                          "text-align": "right",
-                        }}
-                      />
-                    </div>
+                  <div class="band-numeric-input">
+                    <span>Freq:</span>
+                    <input
+                      type="number"
+                      value={band.freq}
+                      onInput={(e) => setBands(i(), "freq", Number.parseInt(e.target.value, 10) || 0)}
+                    />
+                  </div>
+                  <div class="band-numeric-input">
+                    <span>Q:</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={band.q}
+                      onInput={(e) =>
+                        setBands(i(), "q", Math.max(0.25, Math.min(8, Number.parseFloat(e.target.value) || 0.25)))
+                      }
+                    />
                   </div>
                 </div>
               </div>

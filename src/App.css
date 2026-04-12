@@ -77,4 +77,110 @@ svg line {
 
 .eq-point text {
   fill: #000000;
+  font-size: 0.8rem;
+}
+
+.fader {
+  position: relative;
+  width: 60px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #e2e2e2;
+  outline: 1px #e2e2e2 solid;
+}
+
+.fader-track-line {
+  position: absolute;
+  width: 2px;
+  height: 260px;
+  background: #aaa;
+  top: 10px;
+}
+
+.fader-handle {
+  position: absolute;
+  background: #111;
+  color: white;
+  padding: 2px 4px;
+  cursor: n-resize;
+  user-select: none;
+  font-size: 0.8rem;
+  z-index: 2;
+}
+
+.fader-value-box {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #111;
+  color: white;
+  font-size: 0.8rem;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace;
+}
+
+.bands-container {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  width: 100%;
+}
+
+.band-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.band-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 60px;
+}
+
+.band-select {
+  background: #222;
+  color: #eee;
+  border: 1px solid #333;
+  padding: 2px;
+  font-size: 0.7rem;
+}
+
+.band-numeric-input {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.6rem;
+  color: #888;
+}
+
+.band-numeric-input input {
+  background: #1a1a1a;
+  color: #eee;
+  border: 1px solid #333;
+  padding: 2px;
+  font-size: 0.7rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.slider {
+  position: absolute;
+  top: 10px;
+  height: 260px;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 3;
+  -webkit-appearance: slider-vertical;
+  writing-mode: bt-lr;
 }
