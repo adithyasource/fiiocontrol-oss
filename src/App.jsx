@@ -231,8 +231,20 @@ function App() {
 
         <div class="info-text">
           <p>the only supported device is the fiio x jadeaudio ja11 since that’s the only one i have :]</p>
-
-          <p>if you want me to reverse engineer other dacs, please do let me know!</p>
+          <p style={{ display: "inline-block" }}>
+            if you want me to reverse engineer other dacs, please do let me know!{" "}
+            <button
+              class="email"
+              type="button"
+              onClick={async (e) => {
+                e.preventDefault();
+                await navigator.clipboard.writeText("me@adithya.zip");
+                alert("email copied");
+              }}
+            >
+              me@adithya.zip
+            </button>
+          </p>
         </div>
       </>
     );
@@ -470,6 +482,29 @@ function App() {
           </For>
         </div>
         <br />
+
+        <p style={{ display: "inline-block" }}>
+          if you want me to reverse engineer other dacs, please do let me know!{" "}
+          <button
+            class="email"
+            type="button"
+            onClick={async (e) => {
+              e.preventDefault();
+              await navigator.clipboard.writeText("me@adithya.zip");
+              alert("email copied");
+            }}
+          >
+            me@adithya.zip
+          </button>
+        </p>
+        <br />
+        <p style={{ display: "inline-block" }}>
+          the project is open source on{" "}
+          <a href="https://github.com/adithyasource/fiiocontrol-oss" target="_blank" class="email">
+            github
+          </a>{" "}
+          so if you face any issues or want to contribute, feel free to open an issue or pull request!
+        </p>
       </Show>
     </div>
   );

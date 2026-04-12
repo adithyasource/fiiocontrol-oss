@@ -65,9 +65,13 @@ function handleInputReport(e) {
 
 export async function connectDAC() {
   try {
-    const devices = await navigator.hid.requestDevice({ filters: [] });
+    const devices = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x2972 }] });
     device = devices[0];
     if (!device) return;
+    if (device.productId !== 258) {
+      alert("your device isn't supported yet :(");
+      return;
+    }
     await device.open();
     device.addEventListener("inputreport", handleInputReport);
     setProductName(device.productName);

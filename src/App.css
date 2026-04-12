@@ -49,6 +49,10 @@ button {
   color: #e2e2e2;
 }
 
+p {
+  color: #e2e2e2;
+}
+
 .header {
   width: 100%;
   display: flex;
@@ -246,4 +250,13 @@ table {
 
 tr td:nth-child(2) {
   text-align: right;
+}
+
+.email {
+  background-color: transparent;
+  border: 0px;
+  padding: 0px;
+  margin: 0px;
+  color: #ffffff;
+  text-decoration: underline;
 }
