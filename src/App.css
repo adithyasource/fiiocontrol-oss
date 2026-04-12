@@ -77,17 +77,21 @@ svg line {
 
 .eq-point text {
   fill: #000000;
-  font-size: 0.8rem;
 }
 
 .fader {
   position: relative;
-  width: 60px;
-  height: 300px;
+  width: 70px;
+  height: 20rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #e2e2e2;
+  outline: 1px #e2e2e2 solid;
+}
+
+.fader-inverted {
+  background-color: transparent;
   outline: 1px #e2e2e2 solid;
 }
 
@@ -99,15 +103,22 @@ svg line {
   top: 10px;
 }
 
+.fader-inverted .fader-track-line {
+  background: #333;
+}
+
 .fader-handle {
   position: absolute;
   background: #111;
   color: white;
-  padding: 2px 4px;
+  padding: 0px 2px 0px 2px;
   cursor: n-resize;
   user-select: none;
-  font-size: 0.8rem;
-  z-index: 2;
+}
+
+.fader-inverted .fader-handle {
+  background: #e2e2e2;
+  color: #000;
 }
 
 .fader-value-box {
@@ -117,7 +128,6 @@ svg line {
   right: 0;
   background: #111;
   color: white;
-  font-size: 0.8rem;
   height: 30px;
   display: flex;
   align-items: center;
@@ -125,13 +135,17 @@ svg line {
   font-family: monospace;
 }
 
+.fader-inverted .fader-value-box {
+  background: #e2e2e2;
+  color: #000;
+}
+
 .bands-container {
   display: flex;
-  gap: 15px;
   margin-top: 30px;
   overflow-x: auto;
-  padding-bottom: 20px;
-  width: 100%;
+  padding: 3px;
+  justify-content: space-between;
 }
 
 .band-card {
@@ -139,6 +153,7 @@ svg line {
   flex-direction: column;
   gap: 10px;
   align-items: center;
+  width: 5rem;
 }
 
 .band-inputs {
@@ -146,6 +161,7 @@ svg line {
   flex-direction: column;
   gap: 6px;
   width: 60px;
+  align-items: center;
 }
 
 .band-select {
@@ -153,7 +169,6 @@ svg line {
   color: #eee;
   border: 1px solid #333;
   padding: 2px;
-  font-size: 0.7rem;
 }
 
 .band-numeric-input {
@@ -161,16 +176,35 @@ svg line {
   flex-direction: column;
   font-size: 0.6rem;
   color: #888;
+  gap: 2px;
 }
 
-.band-numeric-input input {
-  background: #1a1a1a;
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e2e2e2;
+  padding: 2px 4px;
+  width: fit-content;
+}
+
+.input-with-unit input,
+.band-numeric-input > input {
+  background: transparent;
   color: #eee;
-  border: 1px solid #333;
-  padding: 2px;
-  font-size: 0.7rem;
-  width: 100%;
-  box-sizing: border-box;
+  border: none;
+  padding: 0;
+  outline: none;
+  font-family: "Geist Mono";
+}
+
+.band-numeric-input > input {
+  border: 1px solid #e2e2e2;
+  padding: 2px 4px;
+  width: fit-content;
+}
+
+.unit {
+  color: #eee;
 }
 
 .slider {
@@ -183,4 +217,16 @@ svg line {
   z-index: 3;
   -webkit-appearance: slider-vertical;
   writing-mode: bt-lr;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
 }

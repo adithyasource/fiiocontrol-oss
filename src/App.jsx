@@ -1,5 +1,5 @@
 import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "solid-js";
-import { MAX_FREQ, MAX_GAIN, MIN_FREQ, MIN_GAIN, SAMPLE_RATE } from "./libs/consts";
+import { MAX_FREQ, MAX_GAIN, MIN_FREQ, SAMPLE_RATE } from "./libs/consts";
 import {
   connectDAC,
   handleDisconnect,
@@ -54,7 +54,6 @@ function App() {
 
     const rect = e.currentTarget.getBoundingClientRect();
 
-    const availableHeight = 270;
     const padding = 10;
     const trackHeight = 260;
 
@@ -102,7 +101,7 @@ function App() {
     setBands(index, "gain", Number.parseFloat(value.toFixed(1)));
   }
 
-  function handleBandGainPointerUp(index, e) {
+  function handleBandGainPointerUp(_index, e) {
     draggingBandIdx = null;
     e.currentTarget.releasePointerCapture(e.pointerId);
   }
@@ -235,8 +234,12 @@ function App() {
   return (
     <div class="">
       <div class="header">
-        <button class="secondary">fiiocontrol-oss</button>
-        <button class="secondary">by adithya</button>
+        <button class="secondary" type="button">
+          fiiocontrol-oss
+        </button>
+        <button class="secondary" type="button">
+          by adithya
+        </button>
       </div>
 
       <br />
@@ -380,7 +383,7 @@ function App() {
                   onPointerUp={(e) => handleBandGainPointerUp(i(), e)}
                   style={{ "touch-action": "none" }}
                 >
-                  <div class="fader">
+                  <div class="fader fader-inverted">
                     <div class="fader-track-line" />
                     <div
                       class="fader-handle"
@@ -389,7 +392,7 @@ function App() {
                         transform: "translateY(-50%)",
                       }}
                     >
-                      B {i() + 1}
+                      {i() + 1}
                     </div>
 
                     <div class="fader-value-box">{band.gain.toFixed(1)}db</div>
@@ -397,30 +400,29 @@ function App() {
                 </div>
 
                 <div class="band-inputs">
-                  <select
-                    class="band-select"
-                    value={band.type}
-                    onChange={(e) => setBands(i(), "type", e.target.value)}
-                  >
+                  <select class="secondary" value={band.type} onChange={(e) => setBands(i(), "type", e.target.value)}>
                     <option value="PK">PK</option>
                     <option value="LSC">LSC</option>
                     <option value="HSC">HSC</option>
                   </select>
 
                   <div class="band-numeric-input">
-                    <span>Freq:</span>
-                    <input
-                      type="number"
-                      value={band.freq}
-                      onInput={(e) => setBands(i(), "freq", Number.parseInt(e.target.value, 10) || 0)}
-                    />
+                    <div class="input-with-unit">
+                      <input
+                        type="number"
+                        value={band.freq}
+                        style={{ width: `${band.freq.toString().length}ch` }}
+                        onInput={(e) => setBands(i(), "freq", Number.parseInt(e.target.value, 10) || 0)}
+                      />
+                      <span class="unit">Hz</span>
+                    </div>
                   </div>
                   <div class="band-numeric-input">
-                    <span>Q:</span>
                     <input
                       type="number"
                       step="0.01"
                       value={band.q}
+                      style={{ width: `${band.q.toString().length}ch` }}
                       onInput={(e) =>
                         setBands(i(), "q", Math.max(0.25, Math.min(8, Number.parseFloat(e.target.value) || 0.25)))
                       }
