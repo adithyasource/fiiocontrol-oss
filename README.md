@@ -3,19 +3,28 @@
 <table>
     <tbody>
         <tr>
-            <td><a href="https://fiiocontrol-oss.adithya.zip/" target="_blank">visit page</a></td>
+            <td><a href="https://fiiocontrol-oss.adithya.zip/" target="_blank">visit web driver</a></td>
         </tr>
     </tbody>
 </table>
 
-<img width="933" height="932" alt="Group 14 (3)" src="https://github.com/user-attachments/assets/50867e69-ebd2-4cff-aa22-8d25b570db61" />
+<img width="1262" height="1075" alt="Group 15 (1)" src="https://github.com/user-attachments/assets/ba88c428-f60c-4deb-97c0-4562d15a17c4" />
 
-> ⚠️ please use it at your own discretion!
+<br />
+<br />
+
+
+> ⚠️ please use it at your own discretion! its not completely perfect
 
 currently only works with the fiio ja11 since thats the one i have
 
 if you want me to implement controls for another dac, please open an issue or email me@adithya.zip
 
+## why?
+
+i made this cause i dont really like how slowly the official [fiiocontrol](https://fiiocontrol.fiio.com/) loads and how clunky it is. recently i wasnt able to change my eq for a bit cause their website bugged out for a couple weeks. now that it started working again, i didnt want to be in a situation like that again, so i decided to sniff the packets that their web driver sent to the device over web hid and recreated the api. its not the best code but it it almost 99% there with the official driver.
+
+i also made it really easy to import and export your config into a simple json file. the official site requires you to log in and that just adds to the friction. it obviously doesnt have all the auto eq features that fiio has but other than that, i really like how this turned out and i use this primarily whenever i need to adjust my eq ^-^
 
 ## acknowledgments
 
