@@ -1,7 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap");
 
+:root {
+  --black-color: #f7e9e6;
+  --white-color: #5e5e5d;
+  --grey-color: #db091e;
+  --bright-color: #6e6e64;
+  --green-color: #57d963;
+}
+
 html {
-  background-color: #121212;
+  background-color: var(--black-color);
 }
 
 * {
@@ -41,7 +49,7 @@ body {
   }
   .mobile-warning {
     display: block;
-    color: #e2e2e2;
+    color: var(--white-color);
     line-height: 1.5;
   }
 }
@@ -49,16 +57,16 @@ body {
 .primary,
 .status {
   border: none;
-  background-color: #e2e2e2;
-  color: #000000;
+  background-color: var(--white-color);
+  color: var(--black-color);
   padding: 0px 2px 0px 2px;
   width: max-content;
   height: max-content;
 }
 
-.status[data-status="online"],
-.status[data-status="synced"] {
-  background-color: #00ff5d;
+.status[data-status="connected"],
+.status[data-status="saved"] {
+  background-color: var(--green-color);
 }
 
 button {
@@ -67,9 +75,9 @@ button {
 
 .secondary {
   border: none;
-  color: #e2e2e2;
+  color: var(--white-color);
   background-color: transparent;
-  outline: #e2e2e2 1px solid;
+  outline: var(--white-color) 1px solid;
   padding: 0px 2px 0px 2px;
   width: max-content;
   height: max-content;
@@ -77,11 +85,11 @@ button {
 
 .info-text p {
   width: 70%;
-  color: #e2e2e2;
+  color: var(--white-color);
 }
 
 p {
-  color: #e2e2e2;
+  color: var(--white-color);
 }
 
 .header {
@@ -94,27 +102,31 @@ p {
   display: flex;
   width: 100%;
   justify-content: space-between;
-  outline: 1px #e2e2e2 solid;
+  outline: 1px var(--white-color) solid;
 }
 
 .graph-lines text {
-  fill: #ffffff;
+  fill: var(--white-color);
   opacity: 50%;
   font-size: 0.8rem;
   padding-bottom: 10px;
 }
 
 svg line {
-  stroke: #ffffff;
+  stroke: var(--white-color);
   opacity: 30%;
 }
 
+#eq-path {
+  stroke: var(--white-color);
+}
+
 .eq-point rect {
-  fill: #e2e2e2;
+  fill: var(--white-color);
 }
 
 .eq-point text {
-  fill: #000000;
+  fill: var(--black-color);
 }
 
 .fader {
@@ -124,39 +136,40 @@ svg line {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #e2e2e2;
-  outline: 1px #e2e2e2 solid;
+  background-color: var(--white-color);
+  outline: 1px var(--white-color) solid;
 }
 
 .fader-inverted {
   background-color: transparent;
-  outline: 1px #e2e2e2 solid;
+  outline: 1px var(--white-color) solid;
 }
 
 .fader-track-line {
   position: absolute;
   width: 2px;
-  height: 260px;
-  background: #aaa;
-  top: 10px;
+  height: 280px;
+  background: var(--black-color);
+  opacity: 50%;
+  top: 15px;
 }
 
 .fader-inverted .fader-track-line {
-  background: #333;
+  background: var(--white-color);
 }
 
 .fader-handle {
   position: absolute;
-  background: #111;
-  color: white;
+  background: var(--black-color);
+  color: var(--white-color);
   padding: 0px 2px 0px 2px;
   cursor: n-resize;
   user-select: none;
 }
 
 .fader-inverted .fader-handle {
-  background: #e2e2e2;
-  color: #000;
+  background: var(--white-color);
+  color: var(--black-color);
 }
 
 .fader-value-box {
@@ -164,8 +177,8 @@ svg line {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #111;
-  color: white;
+  background: var(--black-color);
+  color: var(--white-color);
   height: 30px;
   display: flex;
   align-items: center;
@@ -174,8 +187,8 @@ svg line {
 }
 
 .fader-inverted .fader-value-box {
-  background: #e2e2e2;
-  color: #000;
+  background: var(--white-color);
+  color: var(--black-color);
 }
 
 .bands-container {
@@ -203,22 +216,22 @@ svg line {
 }
 
 select option {
-  background-color: #121212;
-  color: #e2e2e2;
+  background-color: var(--black-color);
+  color: var(--white-color);
 }
 
 .band-numeric-input {
   display: flex;
   flex-direction: column;
   font-size: 0.6rem;
-  color: #888;
+  color: var(--white-color);
   gap: 2px;
 }
 
 .input-with-unit {
   display: flex;
   align-items: center;
-  border: 1px solid #e2e2e2;
+  border: 1px solid var(--white-color);
   padding: 2px 4px;
   width: fit-content;
 }
@@ -226,7 +239,7 @@ select option {
 .input-with-unit input,
 .band-numeric-input > input {
   background: transparent;
-  color: #eee;
+  color: var(--white-color);
   border: none;
   padding: 0;
   outline: none;
@@ -234,13 +247,13 @@ select option {
 }
 
 .band-numeric-input > input {
-  border: 1px solid #e2e2e2;
+  border: 1px solid var(--white-color);
   padding: 2px 4px;
   width: fit-content;
 }
 
 .unit {
-  color: #eee;
+  color: var(--white-color);
 }
 
 .slider {
@@ -275,7 +288,7 @@ table {
   margin-top: 0.6rem;
   padding: 0px;
   width: 100%;
-  color: #e2e2e2;
+  color: var(--white-color);
   opacity: 50%;
 }
 
@@ -288,6 +301,6 @@ tr td:nth-child(2) {
   border: 0px;
   padding: 0px;
   margin: 0px;
-  color: #ffffff;
+  color: var(--bright-color);
   text-decoration: underline;
 }

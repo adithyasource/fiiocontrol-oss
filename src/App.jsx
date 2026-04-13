@@ -53,12 +53,12 @@ function App() {
     const rect = e.currentTarget.getBoundingClientRect();
 
     const padding = 10;
-    const trackHeight = 260;
+    const trackHeight = 280;
 
     let y = e.clientY - rect.top - padding;
     y = Math.max(0, Math.min(trackHeight, y));
 
-    // invert (0 = +12, 260 = -12)
+    // invert (0 = +12, 280 = -12)
     let value = 12 - (y / trackHeight) * 24;
 
     // clamp
@@ -84,13 +84,13 @@ function App() {
     if (draggingBandIdx !== index) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
-    const trackHeight = 260;
+    const trackHeight = 280;
     const padding = 10;
 
     let y = e.clientY - rect.top - padding;
     y = Math.max(0, Math.min(trackHeight, y));
 
-    // invert (0 = +12, 260 = -12)
+    // invert (0 = +12, 280 = -12)
     let value = 12 - (y / trackHeight) * 24;
 
     // clamp
@@ -363,7 +363,7 @@ function App() {
             })}
           </g>
 
-          <path d={eqPath()} fill="none" stroke="#e2e2e2" stroke-width="2" />
+          <path d={eqPath()} fill="none" id="eq-path" stroke-width="2" />
 
           <For each={bands}>
             {(band, i) => {
@@ -402,7 +402,7 @@ function App() {
             <div
               class="fader-handle"
               style={{
-                top: `${((12 - masterGain()) / 24) * 260 + 10}px`,
+                top: `${((12 - masterGain()) / 24) * 280 + 15}px`,
                 transform: "translateY(-50%)",
               }}
             >
@@ -443,7 +443,7 @@ function App() {
                   <div
                     class="fader-handle"
                     style={{
-                      top: `${((12 - band.gain) / 24) * 260 + 10}px`,
+                      top: `${((12 - band.gain) / 24) * 280 + 15}px`,
                       transform: "translateY(-50%)",
                     }}
                   >
