@@ -20,7 +20,7 @@ currently only works with the fiio ja11 since thats the one i have
 
 if you want me to implement controls for another dac, please open an issue or email me@adithya.zip
 
-# contributing new dacs / device drivers
+## contributing new dacs / device drivers
 
 device support is implemented as small "drivers".
 
