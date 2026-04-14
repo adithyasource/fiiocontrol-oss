@@ -20,6 +20,15 @@ currently only works with the fiio ja11 since thats the one i have
 
 if you want me to implement controls for another dac, please open an issue or email me@adithya.zip
 
+# contributing new dacs / device drivers
+
+device support is implemented as small "drivers".
+
+- docs: `CONTRIBUTING.md`
+- example: `src/libs/devices/fiioJa11.js`
+
+all you need to do is add a new driver file and register it in `src/libs/devices/index.js`.
+
 ## why?
 
 i made this cause i dont really like how slowly the official [fiiocontrol](https://fiiocontrol.fiio.com/) loads and how clunky it is. recently i wasnt able to change my eq for a bit cause their website bugged out for a couple weeks. now that it started working again, i didnt want to be in a situation like that again, so i decided to sniff the packets that their web driver sent to the device over web hid and recreated the api. its not the best code but it it almost 99% there with the official driver.

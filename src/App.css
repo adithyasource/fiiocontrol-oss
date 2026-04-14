@@ -194,9 +194,12 @@ svg line {
 .bands-container {
   display: flex;
   margin-top: 1.2rem;
-  overflow-x: visible;
+  overflow-x: auto;
   padding-top: 3px;
+  padding-bottom: 3px;
   justify-content: space-between;
+  width: 100%;
+  margin-right: -5px;
 }
 
 .band-card {
@@ -204,7 +207,8 @@ svg line {
   flex-direction: column;
   gap: 10px;
   align-items: center;
-  width: 4.5rem;
+  width: 4.8rem;
+  flex: 0 0 auto;
 }
 
 .band-inputs {
