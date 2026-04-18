@@ -8,7 +8,7 @@
     </tbody>
 </table>
 
-<img width="1262" height="1075" alt="Group 15 (1)" src="https://github.com/user-attachments/assets/ba88c428-f60c-4deb-97c0-4562d15a17c4" />
+<img width="1352" height="928" alt="image 53" src="https://github.com/user-attachments/assets/e4ece07c-184f-47c4-9f07-241e35ccc439" />
 
 <br />
 <br />
