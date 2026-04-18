@@ -8,7 +8,8 @@
     </tbody>
 </table>
 
-<img width="1352" height="928" alt="image 53" src="https://github.com/user-attachments/assets/e4ece07c-184f-47c4-9f07-241e35ccc439" />
+
+![website preview image](https://github.com/user-attachments/assets/d9badfe1-d76a-4161-942e-60d1d16a79f7)
 
 <br />
 <br />
