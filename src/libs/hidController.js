@@ -27,7 +27,7 @@ function resetDisconnectedUi() {
   batch(() => {
     setIsConnected(false);
     setStatus("offline");
-    setProductName("[disconnected]");
+    setProductName();
     setDeviceId(null);
 
     setMasterGain(0);

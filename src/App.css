@@ -8,8 +8,8 @@
 :root {
   --black-color: #131313;
   --white-color: #5e5e5d;
+  --red-color: #d72828;
   --grey-color: #db091e;
-  --bright-color: #d72828;
   --green-color: #57d963;
 }
 
@@ -73,6 +73,10 @@ body {
   height: max-content;
 }
 
+#connect-device {
+  background-color: var(--red-color);
+}
+
 .status[data-status="connected"],
 .status[data-status="saved"] {
   background-color: var(--green-color);
@@ -90,6 +94,11 @@ button {
   padding: 0px 2px 0px 2px;
   width: max-content;
   height: max-content;
+}
+
+.active-product {
+  color: var(--red-color);
+  outline: var(--red-color) 1px solid;
 }
 
 .info-text p {
@@ -124,16 +133,16 @@ p {
 }
 
 svg line {
-  stroke: var(--white-color);
+  stroke: var(--red-color);
   opacity: 30%;
 }
 
 #eq-path {
-  stroke: var(--white-color);
+  stroke: var(--red-color);
 }
 
 .eq-point rect {
-  fill: var(--white-color);
+  fill: var(--red-color);
 }
 
 .eq-point text {
@@ -160,26 +169,26 @@ svg line {
   position: absolute;
   width: 2px;
   height: 280px;
-  background: var(--black-color);
+  background: var(--red-color);
   opacity: 50%;
   top: 15px;
 }
 
 .fader-inverted .fader-track-line {
-  background: var(--white-color);
+  background: var(--red-color);
 }
 
 .fader-handle {
   position: absolute;
-  background: var(--black-color);
-  color: var(--white-color);
+  background: var(--red-color);
+  color: var(--black-color);
   padding: 0px 2px 0px 2px;
   cursor: n-resize;
   user-select: none;
 }
 
 .fader-inverted .fader-handle {
-  background: var(--white-color);
+  background: var(--red-color);
   color: var(--black-color);
 }
 
@@ -316,6 +325,6 @@ tr td:nth-child(2) {
   border: 0px;
   padding: 0px;
   margin: 0px;
-  color: var(--bright-color);
+  color: var(--red-color);
   text-decoration: underline;
 }

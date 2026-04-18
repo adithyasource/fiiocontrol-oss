@@ -286,7 +286,9 @@ function App() {
       <br />
 
       <div class="header">
-        <div class="secondary title">{productName().toLowerCase()}</div>
+        <div class={`secondary title ${productName() && "active-product"}`} id="product-name">
+          {productName() ? productName().toLowerCase() : "[disconnected]"}
+        </div>
 
         <div style={{ display: "flex", gap: "0.6rem" }}>
           <div class="status" data-status={status()}>

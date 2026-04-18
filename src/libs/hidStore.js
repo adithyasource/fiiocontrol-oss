@@ -9,5 +9,5 @@ export const [isConnected, setIsConnected] = createSignal(false);
 export const [status, setStatus] = createSignal("offline");
 export const [originalBands, setOriginalBands] = createSignal([]);
 export const [originalMasterGain, setOriginalMasterGain] = createSignal(0);
-export const [productName, setProductName] = createSignal("[disconnected]");
+export const [productName, setProductName] = createSignal();
 export const [deviceId, setDeviceId] = createSignal(null);
