@@ -220,10 +220,18 @@ function App() {
   return (
     <div class="app-container">
       <div class="header">
-        <a href="https://github.com/adithyasource/fiiocontrol-oss" class="secondary" target="_blank" rel="noopener">
+        <a
+          href="https://github.com/adithyasource/fiiocontrol-oss"
+          class="secondary title"
+          target="_blank"
+          rel="noopener"
+        >
           fiiocontrol-oss
         </a>
         <div style={{ display: "flex", gap: "0.6rem" }}>
+          <a href="https://github.com/adithyasource/fiiocontrol-oss" class="secondary" target="_blank" rel="noopener">
+            github
+          </a>
           <a href="http://adithya.zip/" class="secondary" target="_blank" rel="noopener">
             by adithya
           </a>
@@ -277,32 +285,32 @@ function App() {
       <br />
       <br />
 
-      <div style={{ display: "flex", gap: "0.6rem" }}>
-        <div class="secondary">{productName().toLowerCase()}</div>
-        <div class="status" data-status={status()}>
-          {status()}
+      <div class="header">
+        <div class="secondary title">{productName().toLowerCase()}</div>
+
+        <div style={{ display: "flex", gap: "0.6rem" }}>
+          <div class="status" data-status={status()}>
+            {status()}
+          </div>
+
+          <button onClick={importData} type="button" class="primary">
+            import
+          </button>
+
+          <button onClick={exportData} type="button" class="primary">
+            export
+          </button>
+
+          <button onClick={resetToDefaults} type="button" class="primary">
+            defaults
+          </button>
+          <button onClick={resetToOriginal} type="button" class="primary">
+            reset
+          </button>
+          <button onClick={saveToDAC} type="button" class="primary">
+            write and exit
+          </button>
         </div>
-      </div>
-
-      <br />
-      <div style={{ display: "flex", gap: "0.6rem" }}>
-        <button onClick={importData} type="button" class="primary">
-          import
-        </button>
-
-        <button onClick={exportData} type="button" class="primary">
-          export
-        </button>
-
-        <button onClick={resetToDefaults} type="button" class="primary">
-          defaults
-        </button>
-        <button onClick={resetToOriginal} type="button" class="primary">
-          reset
-        </button>
-        <button onClick={saveToDAC} type="button" class="primary">
-          write and exit
-        </button>
       </div>
 
       <br />

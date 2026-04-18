@@ -1,10 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap");
 
+@font-face {
+  font-family: "Generation Mono";
+  src: url("public/Generation-Mono.otf");
+}
+
 :root {
-  --black-color: #f7e9e6;
-  --white-color: #5e5e5d;
+  --black-color: #131313;
+  --white-color: #b12c2c;
   --grey-color: #db091e;
-  --bright-color: #6e6e64;
+  --bright-color: #d72828;
   --green-color: #57d963;
 }
 
@@ -16,6 +21,10 @@ html {
   font-family: "Geist Mono";
   font-weight: 400;
   font-size: 1rem;
+}
+
+.title {
+  font-family: "Generation Mono";
 }
 
 body {
@@ -95,6 +104,8 @@ p {
 .header {
   width: 100%;
   display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
   justify-content: space-between;
 }
 
