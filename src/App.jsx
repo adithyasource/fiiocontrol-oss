@@ -14,8 +14,15 @@ import {
 import { bands, isConnected, masterGain, productName, setBands, setMasterGain, status } from "./libs/hidStore";
 
 function App() {
-  navigator.hid.addEventListener("disconnect", handleDisconnect);
-  onCleanup(() => navigator.hid.removeEventListener("disconnect", handleDisconnect));
+  const [apiAvailable, setApiAvailable] = createSignal(true);
+
+  try {
+    navigator.hid.addEventListener("disconnect", handleDisconnect);
+  } catch (e) {
+    setApiAvailable(false);
+  }
+
+  onCleanup(() => apiAvailable() && navigator.hid.removeEventListener("disconnect", handleDisconnect));
 
   let previewTimeout;
   createEffect(() => {
@@ -244,18 +251,21 @@ function App() {
       <Show when={!isConnected()}>
         <br />
         <br />
-        <button id="connect-device" class="primary" type="button" onClick={connectDAC}>
-          connect device
-        </button>
-
-        <div class="mobile-warning">
-          <br />
-          this website is only supported on a desktop browser / increase the screen width
-          <br />
-          <br />
-          <br />
-          <br />
-        </div>
+        <Show
+          when={apiAvailable()}
+          fallback={
+            <p class="bright-text">
+              this website is only supported on a desktop browser based on chromium 117+ (google chrome, edge, brave,
+              arc)
+              <br />
+              <br />
+            </p>
+          }
+        >
+          <button id="connect-device" class="primary" type="button" onClick={connectDAC}>
+            connect device
+          </button>
+        </Show>
 
         <p>the one supported device is the fiio jadeaudio ja11 since its the only one i have :]</p>
         <br />
@@ -290,7 +300,7 @@ function App() {
           {productName() ? productName().toLowerCase() : "[disconnected]"}
         </div>
 
-        <div style={{ display: "flex", gap: "0.6rem" }}>
+        <div class="control-panel">
           <div class="status" data-status={status()}>
             {status()}
           </div>

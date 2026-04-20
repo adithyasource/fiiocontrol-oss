@@ -33,10 +33,6 @@ body {
   margin: 1rem auto;
 }
 
-.mobile-warning {
-  display: none;
-}
-
 #connect-device {
   display: flex;
   justify-content: space-between;
@@ -54,14 +50,17 @@ body {
     width: 90%;
     margin: 2rem auto;
   }
-  #connect-device {
-    display: none;
+
+  .title {
+    word-break: break-all;
+    width: 100% !important;
   }
-  .mobile-warning {
-    display: block;
-    color: var(--white-color);
-    line-height: 1.5;
-  }
+}
+
+.control-panel {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .primary,
@@ -328,4 +327,8 @@ tr td:nth-child(2) {
   margin: 0px;
   color: var(--bright-color);
   text-decoration: underline;
+}
+
+.bright-text {
+  color: var(--bright-color);
 }
