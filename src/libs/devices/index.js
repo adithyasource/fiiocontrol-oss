@@ -1,6 +1,7 @@
 import { fiioJa11 } from "./fiioJa11";
+import { fiioBTR17 } from "./fiioBTR17";
 
-export const SUPPORTED_DEVICES = [fiioJa11];
+export const SUPPORTED_DEVICES = [fiioJa11, fiioBTR17];
 
 export function findDriverForDevice(device) {
   return SUPPORTED_DEVICES.find((d) => d.supports(device)) || null;

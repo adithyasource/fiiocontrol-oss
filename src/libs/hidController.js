@@ -124,11 +124,15 @@ export async function fetchAllData() {
 
 export async function sendMasterGain(val) {
   if (!device || !driver) return;
+  // TODO: BTR17 gain slider doesn't send to device — gain changes won't persist until fixed
+  if (driver.id === "fiio-btr17") return;
   await driver.sendMasterGain(device, val);
 }
 
 export async function syncPreview() {
   if (!device || !driver || status() !== "synced") return;
+  // BTR17: don't send live packets at all
+  if (driver.id === "fiio-btr17") return;
   await driver.syncPreview(device, bands, masterGain());
 }
 
