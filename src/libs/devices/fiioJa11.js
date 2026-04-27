@@ -74,7 +74,7 @@ export const fiioJa11 = {
 
       const packet = new Uint8Array([
         0xaa,
-        0x10,
+        0x0a,
         0,
         0,
         21,
@@ -108,7 +108,7 @@ export const fiioJa11 = {
 
       const packet = new Uint8Array([
         0xaa,
-        0x10,
+        0x0a,
         0,
         0,
         21,
