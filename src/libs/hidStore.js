@@ -11,3 +11,5 @@ export const [originalBands, setOriginalBands] = createSignal([]);
 export const [originalMasterGain, setOriginalMasterGain] = createSignal(0);
 export const [productName, setProductName] = createSignal();
 export const [deviceId, setDeviceId] = createSignal(null);
+export const [minMasterGain, setMinMasterGain] = createSignal(-12);
+export const [maxMasterGain, setMaxMasterGain] = createSignal(12);

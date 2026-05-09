@@ -11,7 +11,7 @@ import {
   sendMasterGain,
   syncPreview,
 } from "./libs/hidController";
-import { bands, isConnected, masterGain, productName, setBands, setMasterGain, status } from "./libs/hidStore";
+import { bands, isConnected, masterGain, minMasterGain, maxMasterGain, productName, setBands, setMasterGain, status } from "./libs/hidStore";
 
 function App() {
   const [apiAvailable, setApiAvailable] = createSignal(true);
@@ -65,11 +65,15 @@ function App() {
     let y = e.clientY - rect.top - padding;
     y = Math.max(0, Math.min(trackHeight, y));
 
-    // invert (0 = +12, 280 = -12)
-    let value = 12 - (y / trackHeight) * 24;
+    const minG = minMasterGain();
+    const maxG = maxMasterGain();
+    const range = maxG - minG;
+
+    // invert (0 = +max, trackHeight = +min)
+    let value = maxG - (y / trackHeight) * range;
 
     // clamp
-    value = Math.max(-12, Math.min(12, value));
+    value = Math.max(minG, Math.min(maxG, value));
 
     setMasterGain(value);
     sendMasterGain(value);
@@ -422,7 +426,7 @@ function App() {
             <div
               class="fader-handle"
               style={{
-                top: `${((12 - masterGain()) / 24) * 280 + 15}px`,
+                top: `${((maxMasterGain() - masterGain()) / (maxMasterGain() - minMasterGain())) * 280 + 15}px`,
                 transform: "translateY(-50%)",
               }}
             >

@@ -7,6 +7,8 @@ export const fiioBTR17 = {
   filters: [{ vendorId: 0x2972 }], // any FiiO device
   reportId: 7,
   bandCount: 11,
+  minMasterGain: -24,
+  maxMasterGain: 12,
   defaultBands: [
     { type: "PK", gain: 0, freq: 32, q: 1.0 },
     { type: "PK", gain: 0, freq: 64, q: 1.0 },
@@ -29,10 +31,12 @@ export const fiioBTR17 = {
     const cmd = data[4];
 
     // Master gain response (cmd 22, byte 5 = 1 means response)
-    // Value is a signed 8-bit byte at data[6], divided by 16
+    // data[6] is an unsigned byte with a 164 offset: 164 = 0 dB
+    // Each step = 16 units
+    // Note: formula may need refinement — only 0 dB point confirmed
     if (cmd === 22 && data[5] === 1) {
-      const signed = data[6] > 127 ? data[6] - 256 : data[6];
-      return { type: "masterGain", value: Number.parseFloat((signed / 16).toFixed(1)) };
+      const diff = data[6] - 164;
+      return { type: "masterGain", value: Number.parseFloat((diff / 16).toFixed(1)) };
     }
 
     // Band response (cmd 21, byte 5 = 8 means response)
@@ -73,12 +77,13 @@ export const fiioBTR17 = {
   },
 
   async sendMasterGain(device, val) {
-    let value = Math.round(Math.max(-12, Math.min(12, val)) * 16);
+    let value = Math.round(Math.max(-24, Math.min(12, val)) * 10);
     if (value < 0) value = 65536 + value;
 
+    // BTR17 expects Big-Endian for gain values
     await device.sendReport(
       this.reportId,
-      new Uint8Array([0xaa, 0x10, 0, 0, 23, 2, value & 0xff, (value >> 8) & 0xff, 0, 0xee]),
+      new Uint8Array([0xaa, 0x0a, 0, 0, 23, 2, (value >> 8) & 0xff, value & 0xff, 0, 0xee]),
     );
   },
 
@@ -92,7 +97,7 @@ export const fiioBTR17 = {
 
       const packet = new Uint8Array([
         0xaa,
-        0x10,
+        0x0a,
         0,
         0,
         21,
@@ -117,7 +122,7 @@ export const fiioBTR17 = {
     await this.sendMasterGain(device, masterGain);
   },
 
-  async saveToDAC(device, bands) {
+  async saveToDAC(device, bands, masterGainValue) {
     // Send all band data to device
     for (let i = 0; i < bands.length; i++) {
       const b = bands[i];
@@ -128,7 +133,7 @@ export const fiioBTR17 = {
 
       const packet = new Uint8Array([
         0xaa,
-        0x10,
+        0x0a,
         0,
         0,
         21,
@@ -149,12 +154,13 @@ export const fiioBTR17 = {
       await sleep(200); // Longer delay for save
     }
 
-    // TODO: Fix master gain saving for BTR17
-    // The gain slider currently doesn't send to device, so we can't save it properly
-    // Need to revisit: either send gain on slider move, or read gain from device here
-    // For now, master gain won't persist on save
+    // Save master gain to device (BTR17 requires explicit save for gain)
+    if (masterGainValue !== undefined) {
+      await this.sendMasterGain(device, masterGainValue);
+      await sleep(200);
+    }
 
-    // Save command — BTR17 uses byte 6 = 160
-    await device.sendReport(this.reportId, new Uint8Array([0xaa, 0x10, 0, 0, 25, 1, 160, 0, 0xee]));
+    // Save command
+    await device.sendReport(this.reportId, new Uint8Array([0xaa, 0x0a, 0, 0, 25, 1, 161, 0, 0xee]));
   },
 };
